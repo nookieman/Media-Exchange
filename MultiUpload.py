@@ -11,7 +11,7 @@ from mediaExchange.poster.streaminghttp import register_openers
 
 class MultiUpload(FileHoster):
         
-    MAX_FILESIZE = 1000000 # in bytes
+    MAX_FILESIZE = 500000000 # in bytes
 
     PREURL = "http://multiupload.com/"
 
