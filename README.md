@@ -17,6 +17,7 @@ aptitude install python-django python-crypto
 ```
 
 If you want to use apache heres a simple snippet:
+
 ```
     <Location "/">
         SetHandler python-program
@@ -25,8 +26,9 @@ If you want to use apache heres a simple snippet:
         PythonDebug On
         PythonPath "['/path/to/Media-Exchange/mediaExchange'] + sys.path"
     </Location>
-
 ```
+
+
 Replace the /path/to/... accordingly.
 
 Notice: Currently it is only possible to run MediaExchange in the webserver root.
@@ -35,11 +37,13 @@ Notice: Currently it is only possible to run MediaExchange in the webserver root
 
 To fill the database with your media use the meupdatedb.py script and create a
 config that suits your needs, e.g.:
+
 ```
 [DEFAULT]
 project = /home/chriz/versioning/Media-Exchange/mediaExchange/
 movies = /home/chriz/media/Movies
 ```
+
 The script will parse through the folders and fill the database. There is some
 markup to fill the according fields. The subfolders should be named after the
 following schema:
