@@ -12,9 +12,11 @@ SET UP
 ======
 
 In order to get going you need the following:
+
 ```
 aptitude install python-django python-crypto
 ```
+
 
 If you want to use apache heres a simple snippet:
 
@@ -47,9 +49,11 @@ movies = /home/chriz/media/Movies
 The script will parse through the folders and fill the database. There is some
 markup to fill the according fields. The subfolders should be named after the
 following schema:
+
 ```
 moviename - moviesubtitle (year) [source] |language|
 ```
+
 
 The medaemon.py script should run at all times. It is responible to react on
 users wishes. It packages and uploads requested media.
