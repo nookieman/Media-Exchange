@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if error %}
+<h4>{{ error|escape }}</h4>
+{% endif %}
+
+{% if form %}
+
+<form enctype="multipart/form-data" method="POST" action="/upload/">{% csrf_token %}
+    <fieldset>
+    <legend>File Upload</legend>
+    <table>
+        {{ form }}
+        <tr><td><input type="submit" /></td></tr>
+    </table>
+    </fieldset>
+</form>
+
+<script src="/media/jquery.js"></script>
+<script>
+
+$j = jQuery.noConflict();
+
+
+// Generate 32 char random uuid 
+function gen_uuid() {
+    var uuid = ""
+    for (var i=0; i < 32; i++) {
+        uuid += Math.floor(Math.random() * 16).toString(16); 
+    }
+    return uuid
+}
+
+// Add upload progress for multipart forms.
+$j(function() {
+    $j('form[enctype=multipart/form-data]').submit(function(){ 
+        // Prevent multiple submits
+        if ($j.data(this, 'submitted')) return false;
+
+        var freq = 5000; // freqency of update in ms
+        var uuid = gen_uuid(); // id for this upload so we can fetch progress info.
+        var progress_url = '/upload/progress/'; // ajax view serving progress info
+
+        // Append X-Progress-ID uuid form action
+        this.action += (this.action.indexOf('?') == -1 ? '?' : '&') + 'X-Progress-ID=' + uuid;
+
+        var $progress = $j('<div id="upload-progress" class="upload-progress"></div>').
+            appendTo(document.getElementsByTagName('fieldset')[0]).append('<div style="border-bottom-color:black; border-bottom-width:1px; border-bottom-style:solid;" class="progress-container"><span class="progress-info">uploading 0%</span><div class="progress-bar" style="border-top-color: red; border-top-width:10px; border-top-style:solid;"></div></div>');
+        
+        // progress bar position
+//        $progress.css({
+//            position: ($j.browser.msie && $j.browser.version < 7 )? 'absolute' : 'fixed',
+//            left: '50%', marginLeft: 0-($progress.width()/2), bottom: '20%'
+//        }).show();
+
+        // Update progress bar
+        function update_progress_info() {
+            $progress.show();
+            $j.getJSON(progress_url, {'X-Progress-ID': uuid}, function(data, status){
+                if (data) {
+                    var progress = parseInt(data.uploaded) / parseInt(data.length);
+                    var width = $progress.find('.progress-container').width()
+                    var progress_width = width * progress;
+                    $progress.find('.progress-bar').width(progress_width);
+                    $progress.find('.progress-info').text('uploading ' + parseInt(progress*100) + '%');
+                }
+                window.setTimeout(update_progress_info, freq);
+            });
+        };
+        window.setTimeout(update_progress_info, freq);
+
+        $j.data(this, 'submitted', true); // mark form as submitted.
+    });
+});
+
+</script>
+{% endif %}
+
+{% endblock %}

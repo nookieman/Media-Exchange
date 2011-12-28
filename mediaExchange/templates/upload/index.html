@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Upload Queue</h1>
+
+<ul>
+{% for ur in uploadRequests %}
+    <li><a href="/items/{{ur.item.id}}/">{{ ur.item|escape }}</a>
+    (
+    <span name="itemState{{ ur.item.id }}">
+    {% ifequal ur.state 0 %}
+        queued
+    {% endifequal %}
+    {% ifequal ur.state 1 %}
+        tar'ing ({{ ur.tared }}%)
+    {% endifequal %}
+    {% ifequal ur.state 2 %}
+        encrypting ({{ ur.encrypted  }}%)
+    {% endifequal %}
+    {% ifequal ur.state 3 %}
+        splitting ({{ ur.splitted  }}%)
+    {% endifequal %}
+    {% ifequal ur.state 4 %}
+        uploading ({{ ur.uploaded  }}%)
+    {% endifequal %}
+    </span>
+    )</li>
+{% endfor %}
+</ul>
+
+{% endblock %}
+

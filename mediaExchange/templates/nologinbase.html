@@ -1,0 +1,22 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <link rel="stylesheet" href="style.css" />
+    <title>{% block title %}n00k{% endblock %}</title>
+</head>
+
+<body>
+    <h1 style="text-align:center;">
+    {% block headline %}
+    hU hU
+    {% endblock %}
+    </h1>
+
+
+    <div id="content" style="margin: 20px; padding-left: 20px; padding-right:20px; padding-bottom: 20px;">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
+

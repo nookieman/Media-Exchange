@@ -1,0 +1,29 @@
+{% extends "nologinbase.html" %}
+
+{% block content %}
+
+{% if error %}
+<h4>{{ error|escape }}</h4>
+{% endif %}
+
+{% if loginform %}
+<form method="POST" action="/users/login/">{% csrf_token %}
+    <fieldset>
+    <legend>Registration</legend>
+    <table>
+        {% for field in loginform %}
+            <tr>
+                <th><label for="id_{{field.name}}">{{ field.label }}</th>
+                <td>{{ field }}</td>
+                <td>{{ field.errors }}</td>
+            </tr>
+        {% endfor %}
+        <tr><td><input type="submit" /></td></tr>
+    </table>
+    </fieldset>
+</form>
+{% endif %}
+
+<div>Not a member? -&gt;<a href="/users/registration/">Register</a></div>
+
+{% endblock %}

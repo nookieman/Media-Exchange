@@ -1,0 +1,21 @@
+{% if uploadRequest %}
+    {% if uploadRequest.done %}
+        <a href="/items/{{ uploadRequest.item.id }}/">ready for download</a>
+    {% else %}
+        {% ifequal uploadRequest.state 0 %}
+            queued
+        {% endifequal %}
+        {% ifequal uploadRequest.state 1 %}
+            tar'ing ({{ uploadRequest.tared }}%)
+        {% endifequal %}
+        {% ifequal uploadRequest.state 2 %}
+            encrypting ({{ uploadRequest.encrypted }}%)
+        {% endifequal %}
+        {% ifequal uploadRequest.state 3 %}
+            splitting ({{ uploadRequest.splitted }}%)
+        {% endifequal %}
+        {% ifequal uploadRequest.state 4 %}
+            uploading ({{ uploadRequest.uploaded }}%)
+        {% endifequal %}
+    {% endif %}
+{% endif %}

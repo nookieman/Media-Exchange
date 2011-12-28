@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1> {{ movie.name|escape }} </h1>
+
+{% if movie.subname %}
+<h2>({{movie.subname|escape }})</h2>
+{% endif %}
+
+<!--<div>Path: {{ movie.path|escape }}</div>-->
+
+{% if movie.year %}
+<div>Year: {{ movie.year|escape }}</div>
+{% endif %}
+
+{% if movie.genre %}
+<div>Genre: {{ movie.genre|escape }}</div>
+{% endif %}
+
+{% if movie.language %}
+<div>Language: {{ movie.language|escape }}</div>
+{% endif %}
+
+{% if movie.source %}
+<div>Source: {{ movie.source|escape }}</div>
+{% endif %}
+
+<div>IMDB: <a target="_blank" href="http://www.imdb.com/find?s=all&q={{ movie.name|urlencode }}">search</a></div>
+
+<div>Size: {{ size|escape }}</div>
+
+<div>Download: 
+{% if uploadRequest.done %}
+    {% for df in downloadFiles %}
+        <br/>
+        <a target="_blank" href="{{ df.downloadLink }}">{{ df.downloadLink|escape }}</a>
+    {% endfor %}
+{% else %}
+    {% if uploadRequest %}
+Already requested. The file is now <span name="itemState{{ uploadRequest.item.id }}">
+        {% ifequal uploadRequest.state 0 %}
+queued
+        {% endifequal %}
+        {% ifequal uploadRequest.state 1 %}
+taring ({{ uploadRequest.tared  }}%)
+        {% endifequal %}
+        {% ifequal uploadRequest.state 2 %}
+encrypting ({{ uploadRequest.encrypted  }}%)
+        {% endifequal %}
+        {% ifequal uploadRequest.state 3 %}
+splitting ({{ uploadRequest.splitted }}%)
+        {% endifequal %}
+        {% ifequal uploadRequest.state 4 %}
+uploading ({{ uploadRequest.uploaded  }}%)
+        {% endifequal %}
+        </span>.
+
+    {% else %}
+<a href="/movies/create/{{ movie.id }}/">Create Download</a>
+    {% endif %}
+{% endif %}
+
+
+</div>
+{% if wvotes %}
+<br/>
+<div>Marked watchable by:
+    {% for wv in wvotes %}
+        {{ wv.user|escape }}
+    {% endfor %}
+</div>
+{% endif %}
+{% if nvotes %}
+<br/>
+<div>Marked unwatchable by:
+    {% for nv in nvotes %}
+        {{ nv.user|escape }}
+    {% endfor %}
+</div>
+{% endif %}
+
+<br/>
+<fieldset>
+    <legend>Is this in a watchable quality?</legend>
+    <form method="POST">{% csrf_token %}
+        <tr><td>
+            <select name="watchable">
+                <option>watchable</option>
+                <option>not watchable</option>
+            </select>
+            </td></tr>
+        <tr><td><input type="submit" /></td></tr>
+    </form>
+</fieldset>
+
+{% endblock %}

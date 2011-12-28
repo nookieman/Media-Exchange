@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>20 Newest Items</h1>
+
+<ul>
+{% for movie in movies %}
+    <li>
+        <a href="/movies/details/{{ movie.id }}/">
+            {{ movie.name|escape }}
+            {% if movie.subname %} - {{ movie.subname|escape }}{% endif %}
+            {% if movie.year %} ({{ movie.year|escape }}){% endif %}
+            {% if movie.source %} [{{ movie.source|escape }}]{% endif %}
+            {% if movie.language %} |{{ movie.language|escape }}|{% endif %}
+        </a>
+        {% for dur in doneUploadRequests %}
+            {% ifequal dur.item.id movie.id %}
+                (ready)
+            {% endifequal %}
+        {% endfor %}
+    </li>
+{% endfor %}
+</ul>
+
+{% endblock %}

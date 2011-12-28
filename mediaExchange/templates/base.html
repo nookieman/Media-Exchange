@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <!--link rel="stylesheet" href="style.css" /-->
+    <title>{% block title %}n00k{% endblock %}</title>
+{% if uploadRequests %}
+    <script type="text/javascript" src="/media/prototype.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.0.0/prototype.js"></script>
+    <script>
+var items = Array(
+{% for ur in uploadRequests %}
+    '{{ ur.item.id }}'{% if not forloop.last %},{% endif %}
+{% endfor %}
+);
+
+var ptr = 0;
+
+function updateItem() {
+    var myitem = items[ptr];
+    var myAjax = new Ajax.Request('/ajax/getstate/'+myitem+'/', {method: 'get', onComplete: function(response) {
+            processItemUpdate(myitem, response);
+            if(/ready/i.exec(response.responseText) && ptr < items.length) {
+                ptr += 1;
+            }
+        }
+    })
+}
+
+function processItemUpdate(item, response) {
+    if(response.responseText != "") {
+        var aispans = document.getElementsByName('itemState'+item);
+        for(var i=0; i<aispans.length; i++) {
+            aispans[i].innerHTML = response.responseText;
+        }
+    }
+}
+
+var delay = 5000;
+
+window.setInterval('updateItem()', delay);
+    </script>
+{% endif %}
+</head>
+
+<body>
+    <h1 style="text-align:center;">
+    {% block headline %}
+    n00k's Download Palace
+    {% endblock %}
+    </h1>
+    <div id="menubar" style="float: left; border-width: thin; border-color: black; border-style: solid; margin: 20px; padding-right: 20px;">
+        {% block menubar %}
+        <ul>
+            <li><a href="/index/">Index</a></li>
+            <li>Categories
+                <ul>
+                    <li><a href="/movies/">Movies</a></li>
+                    <li><a href="/series/">Series</a></li>
+                    <li><a href="#">tbd</a></li>
+                </ul>
+            </li>
+            <li><a href="/queue/">Upload Queue</a></li>
+            <li><a href="/upload/">Media Upload</a>
+            <li><a href="/about/">About</a></li>
+            <li><a href="#">tbd</a></li>
+            <li><a href="/users/logout/">Logout</a></li>
+        </ul>
+        {% endblock %}
+    </div>
+
+    <div id="queuebar" style="float: right; border-width: thin; border-color: black; border-style: solid; margin: 20px; padding-left: 20px; padding-right:20px; padding-bottom: 20px;">
+    {% block queuebar %}
+        <h3>Upload Queue:</h3>
+    {% if uploadRequests %}
+        <ul>
+            {% for ur in uploadRequests %}
+            <li><a href="/items/{{ur.item.id}}/">{{ ur.item|escape }}</a>
+            (
+            <span name="itemState{{ ur.item.id }}">
+            {% ifequal ur.state 0 %}
+                queued
+            {% endifequal %}
+            {% ifequal ur.state 1 %}
+                tar'ing ({{ ur.tared }}%)
+            {% endifequal %}
+            {% ifequal ur.state 2 %}
+                encrypting ({{ ur.encrypted  }}%)
+            {% endifequal %}
+            {% ifequal ur.state 3 %}
+                splitting ({{ ur.splitted  }}%)
+            {% endifequal %}
+            {% ifequal ur.state 4 %}
+                uploading ({{ ur.uploaded  }}%)
+            {% endifequal %}
+            </span>
+            )
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        The upload queue is empty.
+    {% endif %}
+    {% endblock %}
+    </div>
+
+
+    <div id="content" style="float:left; margin: 20px; padding-left: 20px; padding-right:20px; padding-bottom: 20px;">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
+
