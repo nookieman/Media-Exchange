@@ -11,8 +11,8 @@ import hashlib
 import math
 import os
 import re
-import rsa
-from rsa.bigfile import encrypt_bigfile
+#import rsa
+#from rsa.bigfile import encrypt_bigfile
 import sys
 import tarfile
 import threading
@@ -31,10 +31,10 @@ STATE_UPLOADING = 4
 MAX_FILE_SIZE = 1000000000
 ENCRYPTION_KEY = 'thisistheencryptionkey1234567890!"$%&/()=?+*#,.-;:_>.<'
 ENCRYPTION_CHUNK_SIZE = 100000000
-DOWNLOAD_PASSWORD = 'thisisthedownloadpassword'
+#DOWNLOAD_PASSWORD = 'thisisthedownloadpassword'
 MIN_NICE_LEVEL = 15
-PRIVATE_KEY = "/tmp/privKey.pem"
-PUBLIC_KEY = "/tmp/pubKey.pem"
+#PRIVATE_KEY = "/tmp/privKey.pem"
+#PUBLIC_KEY = "/tmp/pubKey.pem"
 
 DONE = False
 
@@ -72,7 +72,7 @@ def pack(item, uploadRequest):
         taredFile = tarDownload(item.path)
         uploadRequest.state=STATE_ENCRYPTING
         uploadRequest.save()
-        encfile = encryptDownloadRSA(uploadRequest, taredFile)
+        encfile = encryptDownload(uploadRequest, taredFile)
         uploadRequest.state=STATE_SPLITTING
         uploadRequest.save()
         encfiles = splitFile(uploadRequest, encfile)
@@ -137,18 +137,18 @@ def encryptDownload(uploadRequest, file):
     sfh.close()
     return tmpfile
 
-def encryptDownloadRSA(uploadRequest, file):
-    print "encryptDownloadRSA(", file, ")"
-    pubKey = rsa.PublicKey.load_pkcs1(open(PUBLIC_KEY).read())
-    tmpfile = '/tmp/%s' % (hashlib.sha1(file).hexdigest())
-    dfh = open(tmpfile, 'wb')
-    sfh = open(file, 'rb')
-    encrypt_bigfile(sfh, dfh, pubKey)
-    dfh.close()
-    sfh.close()
-    uploadRequest.encrypted = 100
-    uploadRequest.save()
-    return tmpfile
+#def encryptDownloadRSA(uploadRequest, file):
+#    print "encryptDownloadRSA(", file, ")"
+##    pubKey = rsa.PublicKey.load_pkcs1(open(PUBLIC_KEY).read())
+#    tmpfile = '/tmp/%s' % (hashlib.sha1(file).hexdigest())
+#    dfh = open(tmpfile, 'w')
+#    sfh = open(file, 'r')
+##    encrypt_bigfile(sfh, dfh, pubKey)
+#    dfh.close()
+#    sfh.close()
+#    uploadRequest.encrypted = 100
+#    uploadRequest.save()
+#    return tmpfile
 
 def splitFile(uploadRequest, file):
     'splitFile(',file,')'

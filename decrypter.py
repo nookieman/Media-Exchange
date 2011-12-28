@@ -1,10 +1,17 @@
 #!/usr/bin/python
 
-import sys, os, math
+import argparse
+import math
+import os
+import sys
 from Crypto.Cipher import Blowfish
+
+#import rsa
+#from rsa.bigfile import decrypt_bigfile
 
 ENCRYPTION_KEY = 'thisistheencryptionkey1234567890!"$%&/()=?+*#,.-;:_>.<'
 ENCRYPTION_CHUNK_SIZE = 100000000
+#PRIVATE_KEY = "/tmp/privKey.pem"
 
 def joinFiles(files):
     print 'joinFiles(', files, ')'
@@ -32,16 +39,29 @@ def decryptFile(fileHandle, outfile):
     dfh.close()
     fileHandle.close()
 
+#def decryptFileRSA(fileHandle, outfile):
+#    print "decryptFileRSA(", fileHandle, outfile,")"
+#    privKey = rsa.PrivateKey.load_pkcs1(open(PRIVATE_KEY).read())
+#    outfileHandle = open(outfile, 'w')
+#    decrypt_bigfile(fileHandle, outfileHandle, privKey)
+#    outfileHandle.close()
+
 if __name__ == '__main__':
-    if len(sys.argv) >= 3:
-        files = sys.argv[1:-1]
-        if len(files)>1:
-            tfh = joinFiles(files)
-        else:
-            tfh = open(files[0])
-            tfh.seek(0, os.SEEK_END)
-        decryptFile(tfh, sys.argv[-1])
-        print 'done.'
+
+    parser = argparse.ArgumentParser(description='Decrypt a file downloaded from MediaExchange.')
+    parser.add_argument('encfiles', metavar="enc-file", type=str, nargs="+", help="encrypted input files")
+    parser.add_argument('outfile', metavar="out-file", type=str, help="output file")
+    args = parser.parse_args()
+
+#    if len(sys.argv) >= 3:
+#        files = sys.argv[1:-1]
+    if len(args.encfiles)>1:
+        tfh = joinFiles(files)
     else:
-        print 'usage: %s <enc-file> [<enc-file> ...] <out-file>' % (sys.argv[0])
+        tfh = open(args.encfiles[0])
+        tfh.seek(0, os.SEEK_END)
+    decryptFile(tfh, args.outfile)
+    print 'done.'
+#    else:
+#        print 'usage: %s <enc-file> [<enc-file> ...] <out-file>' % (sys.argv[0])
 
