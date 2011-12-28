@@ -8,7 +8,8 @@ file hoster. Afterwards everyone in the peergroup may download the files from
 the file hoster and use the decrypter to unpackage it.
 
 
-== SET UP ==
+SET UP
+======
 
 In order to get going you need the following:
 ```
