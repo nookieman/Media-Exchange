@@ -56,4 +56,4 @@ moviename - moviesubtitle (year) [source] |language|
 
 
 The medaemon.py script should run at all times. It is responible to react on
-users wishes. It packages and uploads requested media.
+user's wishes. It packages and uploads requested media.

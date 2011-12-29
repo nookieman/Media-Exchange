@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>{{ serie.name|escape }}</h1>
+
+<ul>
+{% for season in seasons %}
+<li><a href="/series/season/{{ season.id }}">Season {{ season.number|escape }}</a></li>
+{% endfor %}
+</ul>
+
+{% endblock %}

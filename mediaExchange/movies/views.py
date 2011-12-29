@@ -4,14 +4,6 @@ from django.core.context_processors import csrf
 
 from mediaExchange.movies.models import Movie, UploadRequest, DownloadFile, Vote
 
-#from Crypto.Cipher import Blowfish
-#import hashlib
-#import ftplib
-#import os
-#import tarfile
-#import re
-#import urllib2
-
 @login_required
 def moviesindex(request):
     movies = Movie.objects.all().order_by('name')

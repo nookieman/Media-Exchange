@@ -22,13 +22,13 @@ def seriesseasondetails(request, season_id):
     return getSeasonDetails(season)
 
 @login_required
-def seriescreate(request, season_id):
+def seriesseasoncreate(request, season_id):
     print 'create called'
     season = get_object_or_404(Season, pk=season_id)
     if not DownloadFile.objects.filter(item=season):
         ur = UploadRequest.objects.filter(item=season)
         if not ur:
-            ur = UploadRequest(item=season)
+            ur = UploadRequest(item=season, user=request.user)
             ur.save()
     return getSeasonDetails(season)
 
@@ -53,4 +53,5 @@ def getSeasonDetails(season):
         ur = ur[0]
     urs = UploadRequest.objects.filter(done=False).order_by('id')
     return render_to_response('series/seasondetails.html', {'serie':season.serie, 'season':season, 'size':sizeString, 'downloadFiles':downloadFiles, 'uploadRequest':ur, 'uploadRequests':urs})
+
 

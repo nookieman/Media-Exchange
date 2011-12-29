@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>{{ season.serie.name|escape }}</h1>
+
+<h2>Season {{ season.number|escape}}</h2>
+
+{% if season.year %}
+<div>Year: {{ season.year|escape }}</div>
+{% endif %}
+
+{% if season.genre %}
+<div>Genre: {{ season.genre|escape }}</div>
+{% endif %}
+
+{% if season.language %}
+<div>Language: {{ season.language|escape }}</div>
+{% endif %}
+
+{% if season.source %}
+<div>Source: {{ season.source|escape }}</div>
+{% endif %}
+
+<div>IMDB: <a target="_blank" href="http://www.imdb.com/find?s=all&q={{ season.serie.name|urlencode }}">search</a></div>
+
+<div>Size: {{ size|escape }}</div>
+
+<div>Download:
+{% if uploadRequest.done %}
+    {% for df in downloadFiles %}
+        <br/>
+        <a target="_blank" href="{{ df.downloadLink }}">{{ df.downloadLink|escape }}</a>
+    {% endfor %}
+{% else %}
+    {% if uploadRequest %}
+Already requested. The file is now <span name="itemState{{ uploadRequest.item.id }}">
+        {% ifequal uploadRequest.state 0 %}
+queued
+        {% endifequal %}
+        {% ifequal uploadRequest.state 1 %}
+taring ({{ uploadRequest.tared  }}%)
+        {% endifequal %}
+        {% ifequal uploadRequest.state 2 %}
+encrypting ({{ uploadRequest.encrypted  }}%)
+        {% endifequal %}
+        {% ifequal uploadRequest.state 3 %}
+splitting ({{ uploadRequest.splitted }}%)
+        {% endifequal %}
+        {% ifequal uploadRequest.state 4 %}
+uploading ({{ uploadRequest.uploaded  }}%)
+        {% endifequal %}
+        </span>.
+
+    {% else %}
+<a href="/series/create/{{ season.id }}/">Create Download</a>
+    {% endif %}
+{% endif %}
+
+
+{% endblock %}
