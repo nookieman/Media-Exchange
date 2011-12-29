@@ -22,13 +22,13 @@ class Language(models.Model):
 
 class Serie(models.Model):
     name = models.CharField(max_length=256)
-    subname = models.CharField(max_length=256, blank=True, null=True)
 
     def __unicode__(self):
         return self.name
 
 class Season(Item):
     serie = models.ForeignKey('Serie')
+    subname = models.CharField(max_length=256, blank=True, null=True)
     number = models.IntegerField(blank=False, null=False)
     language = models.ForeignKey('Language', blank=True, null=True)
     genre = models.ForeignKey('SerieGenre', blank=True, null=True)

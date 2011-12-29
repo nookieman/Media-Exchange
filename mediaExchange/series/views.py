@@ -35,7 +35,8 @@ def seriesseasoncreate(request, season_id):
 def getSerieDetails(serie):
     seasons = Season.objects.filter(serie=serie)
     urs = UploadRequest.objects.filter(done=False).order_by('id')
-    return render_to_response('series/seriesdetails.html', {'serie':serie, 'seasons':seasons, 'uploadRequests':urs})
+    doneurs = UploadRequest.objects.filter(done=True)
+    return render_to_response('series/seriesdetails.html', {'serie':serie, 'seasons':seasons, 'uploadRequests':urs, 'doneUploadRequests':doneurs})
 
 def getSeasonDetails(season):
     size = season.size

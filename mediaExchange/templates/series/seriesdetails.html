@@ -6,7 +6,16 @@
 
 <ul>
 {% for season in seasons %}
-<li><a href="/series/season/{{ season.id }}">Season {{ season.number|escape }}</a></li>
+    <li>
+        <a href="/series/season/{{ season.id }}">
+            Season {{ season.number|escape }} ({{ season.subname|escape }})
+        </a>
+        {% for dur in doneUploadRequests %}
+            {% ifequal dur.item.id season.id %}
+                (ready)
+            {% endifequal %}
+        {% endfor %}
+    </li>
 {% endfor %}
 </ul>
 

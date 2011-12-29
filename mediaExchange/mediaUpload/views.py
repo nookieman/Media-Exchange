@@ -187,14 +187,19 @@ def handleSerie(request):
                 if form.cleaned_data['number']:
                     number = form.cleaned_data['number']
 
+                subname = None
+                if form.cleaned_data['subname']:
+                    subname = form.cleaned_data['subname']
+
                 year = None
                 if form.cleaned_data['year']:
                     year = form.cleaned_data['year']
 
-                m = Season(serie=serie, number=number, path=path, size=filesize,
-                           mtime=mtime, language=language, year=year,
-                           genre=genre, source=source)
-                m.save()
+                season = Season(serie=serie, subname=subname, number=number,
+                                path=path, size=filesize, mtime=mtime,
+                                language=language, year=year, genre=genre,
+                                source=source)
+                season.save()
                 form = None
                 error = 'Thank you for contributing.'
             except Exception, e:
@@ -232,10 +237,11 @@ def seasonExists(serie, form):
     seasons = Season.objects.filter(serie=serie)
     for season in seasons:
         if form.cleaned_data['number'] == season.number:
-            if form.cleaned_data['source'] == season.source or (not form.cleaned_data['source'] and not season.source):
-                if form.cleaned_data['language'] == rm.language or (not form.cleaned_data['language'] and not rm.language):
-                    result = True
-                    break
+            if form.cleaned_data['subname'] == season.subname or (not form.cleaned_data['subname'] and not season.subname):
+                if form.cleaned_data['source'] == season.source or (not form.cleaned_data['source'] and not season.source):
+                    if form.cleaned_data['language'] == rm.language or (not form.cleaned_data['language'] and not rm.language):
+                        result = True
+                        break
     return result
 
 #TODO this has to be split for movies and series
