@@ -17,29 +17,33 @@ def addMovies(directory):
         for mdir in os.listdir(directory):
             dirname = os.path.basename(mdir)
             mpath = directory + '/' + dirname
-            (mname, msubname, myear, msource) = inforegex.match(dirname).groups()
-            mmtime = int(os.stat(mpath).st_mtime)
-            if msource:
-                # if the source of the movie does not exist create it
-                src = MovieSource.objects.filter(name=msource)
-                if src:
-                    msource = src[0]
+            match = inforegex.match(dirname)
+            if match:
+                (mname, msubname, myear, msource) = inforegex.match(dirname).groups()
+                mmtime = int(os.stat(mpath).st_mtime)
+                if msource:
+                    # if the source of the movie does not exist create it
+                    src = MovieSource.objects.filter(name=msource)
+                    if src:
+                        msource = src[0]
+                    else:
+                        msource = MovieSource(name=msource)
+                        msource.save()
+                rm = Movie.objects.filter(name=mname, subname=msubname, year=myear)
+                if rm:
+                    rm = rm[0]
+                    if rm.mtime < mmtime:
+                        rm.path = mpath
+                        rm.mtime = mmtime
+                        rm.size = getDirSize(mpath)
+                        rm.save()
                 else:
-                    msource = MovieSource(name=msource)
-                    msource.save()
-            rm = Movie.objects.filter(name=mname, subname=msubname, year=myear)
-            if rm:
-                rm = rm[0]
-                if rm.mtime < mmtime:
-                    rm.path = mpath
-                    rm.mtime = mmtime
-                    rm.size = getDirSize(mpath)
-                    rm.save()
+                    msize = getDirSize(mpath)
+                    print (mname, msubname, myear, msource, msize)
+                    m = Movie(name=mname, subname=msubname, path=mpath, year=myear, source=msource, mtime=mmtime, size=msize)
+                    m.save()
             else:
-                msize = getDirSize(mpath)
-                print (mname, msubname, myear, msource, msize)
-                m = Movie(name=mname, subname=msubname, path=mpath, year=myear, source=msource, mtime=mmtime, size=msize)
-                m.save()
+                print "WARNING: invalid movie directory format '%s'" % dirname
     else:
         print 'ERROR: no such directory "%s"' % (directory)
 
