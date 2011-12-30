@@ -3,12 +3,12 @@
 {% block content %}
 If you want do download something and there is not yet a download link click on "Create download link" and the item will be placed in the upload queue. Only one item at a time is processed. You see the upload queue to your right.
 
-To decrypt the downloaded files you need the <a target="_blank" href="/media/decrypter.py">decrypter.py</a>.
+To decrypt the downloaded files you need the <a target="_blank" href="/media/decrypter.py">decrypter.py</a> and the <a target="_blank" href="/about/keyfile.txt">keyfile</a>.
 <br />
 <br />
 Usage:
 <pre>
-decrypter.py 824c4eb03e2858ecd4a8b820d71d618a05c1af460 824c4eb03e2858ecd4a8b820d71d618a05c1af461 film.tar
+decrypter.py -k keyfile.txt 824c4eb03e2858ecd4a8b820d71d618a05c1af460 824c4eb03e2858ecd4a8b820d71d618a05c1af461 film.tar
 </pre>
 This will create the file film.tar which holds the movie you downloaded in the tar format.
 {% endblock %}
