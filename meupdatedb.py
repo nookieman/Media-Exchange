@@ -85,7 +85,6 @@ def addSeries(directory):
                                     slanguage.save()
                             try:
                                 season = Season.objects.get(serie=serie, number=seasonNumber, subname=ssubname, year=syear, language=slanguage, source=ssource)
-                                season = season[0]
                                 if season.mtime < smtime:
                                     season.path = seasonPath
                                     season.mtime = smtime
