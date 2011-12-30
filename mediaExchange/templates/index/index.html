@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<h1>20 Newest Items</h1>
+<h1>20 Newest Movies</h1>
 
 <ul>
 {% for movie in movies %}
@@ -16,6 +16,32 @@
         </a>
         {% for dur in doneUploadRequests %}
             {% ifequal dur.item.id movie.id %}
+                (ready)
+            {% endifequal %}
+        {% endfor %}
+    </li>
+{% endfor %}
+</ul>
+
+
+<h1>20 Newest Series</h1>
+
+<ul>
+{% for season in seasons %}
+    <li>
+        <a href="/series/series/{{ season.serie.id }}/">
+            {{ season.serie.name|escape }}
+        </a>
+        :
+        <a href="/series/season/{{ season.id }}/">
+            Season {{ season.number|escape }}
+            {% if season.subname %} - {{ season.subname|escape }}{% endif %}
+            {% if season.year %} ({{ season.year|escape }}){% endif %}
+            {% if season.source %} [{{ season.source|escape }}]{% endif %}
+            {% if season.language %} |{{ season.language|escape }}|{% endif %}
+        </a>
+        {% for dur in doneUploadRequests %}
+            {% ifequal dur.item.id season.id %}
                 (ready)
             {% endifequal %}
         {% endfor %}
