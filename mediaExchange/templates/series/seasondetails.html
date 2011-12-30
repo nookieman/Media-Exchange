@@ -6,7 +6,9 @@
 
 <h2>Season {{ season.number|escape }}</h2>
 
+{% if season.subname %}
 <h3>{{ season.subname|escape }}</h3>
+{% endif %}
 
 {% if season.year %}
 <div>Year: {{ season.year|escape }}</div>
