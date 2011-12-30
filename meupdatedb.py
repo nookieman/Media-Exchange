@@ -6,7 +6,8 @@ import re
 import sys
 from ConfigParser import SafeConfigParser
 
-from mediaExchange.movies.models import Movie, MovieSource
+from mediaExchange.movies.models import Movie, MovieSource, Language
+from mediaExchange.series.models import Serie, Season, SerieSource
 
 def addMovies(directory):
     #TODO check if still working with named groups
@@ -43,35 +44,59 @@ def addMovies(directory):
         print 'ERROR: no such directory "%s"' % (directory)
 
 def addSeries(directory):
-    inforegex = re.compile('^(?P<title>.*?)(?:\s+-\s+(?P<subtitle>.*?))?(?:\s+\((?P<year>\d{4})\))?(?:\s+\[(?P<source>[a-zA-Z0-9!"$%&/()=\\\\?_-]*)\])?(?:\s+\|(?P<language>.*)\|)?$')
-    seasonregex = re.compile('^s(?:eason)?\s+0*(\d+)$', re.I)
+    serieregex = re.compile('^(?P<title>.*?)$')
+    seasonregex = re.compile('^s(?:eason)?\s*0*(\d+)(?:\s+-\s+(?P<subtitle>.*?))?(?:\s+\((?P<year>\d{4})\))?(?:\s+\[(?P<source>[a-zA-Z0-9!"$%&/()=\\\\?_-]*)\])?(?:\s+\|(?P<language>.*)\|)?$', re.I)
     if os.path.isdir(directory):
-        for mdir in os.listdir(directory):
-            dirname = os.path.basename(mdir)
-            mpath = directory + '/' + dirname
-            (mname, msubname, myear, msource, mlanguage) = inforegex.match(dirname).groups()
-            mmtime = int(os.stat(mpath).st_mtime)
-            if msource:
-                # if the source of the Series does not exist create it
-                src = MovieSource.objects.filter(name=msource)
-                if src:
-                    msource = src[0]
-                else:
-                    msource = MovieSource(name=msource)
-                    msource.save()
-            rm = Movie.objects.filter(name=mname, subname=msubname, year=myear, language=mlanguage)
-            if rm:
-                rm = rm[0]
-                if rm.mtime < mmtime:
-                    rm.path = mpath
-                    rm.mtime = mmtime
-                    rm.size = getDirSize(mpath)
-                    rm.save()
+        for serieDir in os.listdir(directory):
+            seriePath = directory + '/' + serieDir
+            if os.path.isdir(seriePath):
+                serieDirName = os.path.basename(serieDir)
+                serieName = serieregex.match(serieDirName).group(1)
+                for seasonDir in os.listdir(seriePath):
+                    if os.path.isdir(seriePath + '/' + seasonDir):
+                        seasonDirName = os.path.basename(seasonDir)
+                        (seasonNumber, ssubname, syear, ssource, slanguage) = seasonregex.match(seasonDirName).groups()
+                        seasonPath = directory + '/' + serieDirName + '/' + seasonDirName
+                        serie = Serie.objects.filter(name=serieName)
+                        if len(serie) > 0:
+                            serie = serie[0]
+                        else:
+                            serie = Serie(name=serieName)
+                            serie.save()
+                        smtime = int(os.stat(seasonPath).st_mtime)
+                        if ssource:
+                            # if the source of the Series does not exist create it
+                            src = SerieSource.objects.filter(name=ssource)
+                            if src:
+                                ssource = src[0]
+                            else:
+                                ssource = SerieSource(name=ssource)
+                                ssource.save()
+                        if slanguage:
+                            # if the language of the Series does not exist create it
+                            lang = Language.objects.filter(name=ssource)
+                            if lang:
+                                slanguage = lang[0]
+                            else:
+                                slanguage = Language(name=ssource)
+                                slanguage.save()
+                        season = Season.objects.filter(serie=serie, number=seasonNumber, subname=ssubname, year=syear, language=slanguage, source=ssource)
+                        if season:
+                            season = season[0]
+                            if season.mtime < smtime:
+                                season.path = seasonPath
+                                season.mtime = smtime
+                                season.size = getDirSize(seasonPath)
+                                season.save()
+                        else:
+                            ssize = getDirSize(seasonPath)
+                            print (serieName, seasonNumber, ssubname, syear, ssource, ssize)
+                            season = Season(serie=serie, number=seasonNumber, subname=ssubname, path=seasonPath, year=syear, source=ssource, language=slanguage, mtime=smtime, size=ssize)
+                            season.save()
+                    else:
+                        print "WARNING: season directory contains invalid file '%s'" % seasonDir
             else:
-                msize = getDirSize(mpath)
-                print (mname, msubname, myear, msource, msize)
-                m = Movie(name=mname, subname=msubname, path=mpath, year=myear, source=msource, language=mlanguage, mtime=mmtime, size=msize)
-                m.save()
+                print 'WARNING: invalid file in series directory "%s"' % serieDir
     else:
         print 'ERROR: no such directory "%s"' % (directory)
 
@@ -108,3 +133,6 @@ if __name__ == "__main__":
         for movieDir in [m.strip() for m in defaults['movies'].split(',')]:
             addMovies(movieDir)
 
+    if 'series' in defaults:
+        for serieDir in [m.strip() for m in defaults['series'].split(',')]:
+            addSeries(serieDir)
