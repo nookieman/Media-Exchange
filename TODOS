@@ -2,7 +2,6 @@
  * Beim upload von userdateien, wenn es tars sind auch untar progress bar machen.
  * Beim Filehoster upload auch das taren mit progress.
  * Dateinamen filtern sollte positionsunabhaengig funktionieren, also es muss nicht erst datum dann source dann sprache stehen.
- * serien konzeptionell ausarbeiten (und dann natuerlich implementieren ;))
  * make filing requests possible
  * allow rating of movie
  * create personal suggestions based on your ratings and ratings of others
