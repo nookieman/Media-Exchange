@@ -133,6 +133,8 @@ INSTALLED_APPS = (
 
 LOGIN_URL = '/users/login/'
 MOVIE_SAVE_DIRECTORY = '/home/chriz/Videos/Movies/'
+ENCRYPTION_KEY = 'thisistheencryptionkey1234567890!"$%&/()=?+*#,.-;:_>.<'
+ENCRYPTION_CHUNK_SIZE = 100000000
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to

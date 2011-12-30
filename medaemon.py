@@ -6,6 +6,8 @@ from mediaExchange.movies.models import Item, UploadRequest, DownloadFile
 from mediaExchange.poster.encode import multipart_encode
 from mediaExchange.poster.streaminghttp import register_openers
 
+from mediaExchange.settings import ENCRYPTION_KEY, ENCRYPTION_CHUNK_SIZE
+
 #import ftplib
 import hashlib
 import math
@@ -28,9 +30,9 @@ STATE_ENCRYPTING = 2
 STATE_SPLITTING = 3
 STATE_UPLOADING = 4
 
-MAX_FILE_SIZE = 1000000000
-ENCRYPTION_KEY = 'thisistheencryptionkey1234567890!"$%&/()=?+*#,.-;:_>.<'
-ENCRYPTION_CHUNK_SIZE = 100000000
+#MAX_FILE_SIZE = 1000000000
+#ENCRYPTION_KEY = 'thisistheencryptionkey1234567890!"$%&/()=?+*#,.-;:_>.<'
+#ENCRYPTION_CHUNK_SIZE = 100000000
 #DOWNLOAD_PASSWORD = 'thisisthedownloadpassword'
 MIN_NICE_LEVEL = 15
 #PRIVATE_KEY = "/tmp/privKey.pem"
