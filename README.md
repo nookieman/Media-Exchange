@@ -44,16 +44,31 @@ config that suits your needs, e.g.:
 [DEFAULT]
 project = /home/chriz/versioning/Media-Exchange/mediaExchange/
 movies = /home/chriz/media/Movies
+series = /home/chriz/media/Series,/media/disk42/Series
 ```
 
 The script will parse through the folders and fill the database. There is some
-markup to fill the according fields. The subfolders should be named after the
+markup to fill the according fields. The movie subfolders should be named after the
 following schema:
 
 ```
-moviename - moviesubtitle (year) [source] |language|
+moviename - moviesubtitle (year) [source] |language|/
 ```
+
+For series the following naming schema is used:
+
+```
+seriesname/Season number - seasonsubtitle (year) [source] |language|/
+```
+
+e.g.:
+```
+The Big Bang Theory/Season 2 [DVDRip] |eng|
+```
+
 
 
 The medaemon.py script should run at all times. It is responible to react on
 user's wishes. It packages and uploads requested media.
+
+See the /about page for help with decrypting files.
