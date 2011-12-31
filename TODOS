@@ -9,6 +9,8 @@
  * add comments to items
  * show file listings of items
  * add recently uploaded (to file hoster) to index
+ * check if folder is available before trying to upload (better before adding the UploadRequest), otherwise show error, that its temporarily not available
+   * could add upload request and periodically check if its available again
 
 
 more like a big picture idea for the future:
