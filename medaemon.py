@@ -2,7 +2,7 @@
 
 from MultiUpload import MultiUpload
 
-from mediaExchange.movies.models import Item, UploadRequest, DownloadFile
+from mediaExchange.movies.models import Item, UploadRequest, DownloadFile, EncrpytionKey
 from mediaExchange.poster.encode import multipart_encode
 from mediaExchange.poster.streaminghttp import register_openers
 
@@ -111,7 +111,18 @@ def pack(item, uploadRequest):
 def upload(uploadRequest, files):
     print 'upload(', uploadRequest,',', files, ')'
     for file in files:
-        uploadFile(uploadRequest, file)
+        url = uploadFile(uploadRequest, file)
+        if url:
+            key = None
+            try:
+                key = EncrpytionKey.objects.get(chunkSize=ENCRYPTION_CHUNK_SIZE, key=ENCRYPTION_KEY)
+            except EncrpytionKey.DoesNotExist, e:
+                key = EncrpytionKey(chunkSize=ENCRYPTION_CHUNK_SIZE, key=ENCRYPTION_KEY)
+                key.save()
+            df = DownloadFile(item=uploadRequest.item, downloadLink=url, key=key)
+            df.save()
+        else:
+            print "ERROR: didn't find the url for the DownloadFile (%s)" % file
 
 def tarDownload(file):
     print 'tarDownload(', file,')'
@@ -177,7 +188,7 @@ def splitFile(uploadRequest, file):
     
 def uploadFile(uploadRequest, file):
     mu = MultiUpload()
-    mu.uploadData(file, uploadRequest)
+    return mu.uploadData(file, uploadRequest)
 #    uploadFilebase(uploadRequest, file, item)
 
 #def ftpUploadFilebase(file):

@@ -2,9 +2,14 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+class EncrpytionKey(models.Model):
+    chunkSize = models.IntegerField(blank=False, null=False)
+    key = models.TextField(blank=False, null=False)
+
 class DownloadFile(models.Model):
     item = models.ForeignKey('Item')
     downloadLink = models.URLField(max_length=1024, blank=True, null=True)
+    key = models.ForeignKey('EncrpytionKey', blank=False, null=False)
 
     def __unicode__(self):
         return "<DownloadFile %s (%s)" % (str(self.item), str(self.downloadLink))

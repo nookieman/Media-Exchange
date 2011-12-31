@@ -130,13 +130,11 @@ class MultiUpload(FileHoster):
         request = urllib2.Request(uploadURL, datagen, headers)
         source = urllib2.urlopen(request).read()
         match = self.DOWNLOADLINK_REGEX.search(source)
-        df = None
+        dlLink = None
         if match:
             dlLink = "http://multiupload.com/%s" % match.group(1)
-            df = DownloadFile(item=uploadRequest.item, downloadLink=dlLink)
-            df.save()
-            print "download:", df
+            print "download:", dlLink
         else:
             print source
             print "ERROR: cannot fetch download link for MultiUpload"
-        return df
+        return dlLink

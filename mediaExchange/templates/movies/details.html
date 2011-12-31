@@ -35,6 +35,8 @@
     {% for df in downloadFiles %}
         <br/>
         <a target="_blank" href="{{ df.downloadLink }}">{{ df.downloadLink|escape }}</a>
+         - 
+        <a target="_blank" href="/items/key/{{df.key.id}}/">keyfile</a>
     {% endfor %}
 {% else %}
     {% if uploadRequest %}
