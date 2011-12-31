@@ -44,9 +44,8 @@ def main():
     renice()
     while not DONE:
 #        ur = UploadRequest.objects.filter(done = False, tries__in=range(3)).order_by('id')
-        ur = UploadRequest.objects.filter(done = False).order_by('id')
+        ur = selectUploadRequest():
         if ur:
-            ur = ur[0]
             ur.tries += 1
             ur.save()
             print 'processing', ur
@@ -62,6 +61,17 @@ def renice():
     if nice < MIN_NICE_LEVEL:
         nice = os.nice(MIN_NICE_LEVEL-nice)
         assert nice == MIN_NICE_LEVEL
+
+def selectUploadRequest():
+    ur = None
+    for uploadRequest in UploadRequest.objects.filter(done = False).order_by('id'):
+        if os.path.exists(uploadRequest.item.path):
+            ur = uploadRequest
+            break
+        else:
+            print "WARNING: item path does not exist: '%s'" % uploadRequest.item.path
+    return ur
+
 
 def pack(item, uploadRequest):
     print 'pack(', item, ',', uploadRequest,')'
