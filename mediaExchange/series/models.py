@@ -33,6 +33,23 @@ class Season(Item):
     def __unicode__(self):
         return "%s S%d" % (self.serie.name, self.number)
 
+    def toDict(self):
+        d = {'id'     : self.id,
+             'name'   : self.serie.name,
+             'size'   : self.size,
+             'number' : self.number}
+        if self.subname:
+            d.update({'subname' : self.subname})
+        if self.language:
+            d.update({'language' : self.language.name})
+        if self.year:
+            d.update({'year' : self.year})
+        if self.genre:
+            d.update({'genre' : self.genre.name})
+        if self.source:
+            d.update({'source' : self.source.name})
+        return d
+
 # keep this if decide to make single episodes available
 #class Episode(Item):
 #    season = models.ForeignKey('Season')
