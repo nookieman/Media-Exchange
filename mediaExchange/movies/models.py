@@ -2,14 +2,14 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-class EncrpytionKey(models.Model):
+class EncryptionKey(models.Model):
     chunkSize = models.IntegerField(blank=False, null=False)
     key = models.TextField(blank=False, null=False)
 
 class DownloadFile(models.Model):
     item = models.ForeignKey('Item')
     downloadLink = models.URLField(max_length=1024, blank=True, null=True)
-    key = models.ForeignKey('EncrpytionKey', blank=False, null=False)
+    key = models.ForeignKey('EncryptionKey', blank=False, null=False)
 
     def __unicode__(self):
         return "<DownloadFile %s (%s)" % (str(self.item), str(self.downloadLink))
@@ -50,6 +50,22 @@ class Movie(Item):
 
     def __unicode__(self):
         return self.name
+
+    def toDict(self):
+        d = {'id'   : self.id,
+             'name' : self.name,
+             'size' : self.size}
+        if self.subname:
+            d.update({'subname' : self.subname})
+        if self.language:
+            d.update({'language' : self.language.name})
+        if self.year:
+            d.update({'year' : self.year})
+        if self.genre:
+            d.update({'genre' : self.genre.name})
+        if self.source:
+            d.update({'source' : self.source.name})
+        return d
 
 class UploadRequest(models.Model):
     user = models.ForeignKey(User)

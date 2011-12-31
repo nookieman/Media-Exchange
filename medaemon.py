@@ -2,7 +2,7 @@
 
 from MultiUpload import MultiUpload
 
-from mediaExchange.movies.models import Item, UploadRequest, DownloadFile, EncrpytionKey
+from mediaExchange.movies.models import Item, UploadRequest, DownloadFile, EncryptionKey
 from mediaExchange.poster.encode import multipart_encode
 from mediaExchange.poster.streaminghttp import register_openers
 
@@ -115,9 +115,9 @@ def upload(uploadRequest, files):
         if url:
             key = None
             try:
-                key = EncrpytionKey.objects.get(chunkSize=ENCRYPTION_CHUNK_SIZE, key=ENCRYPTION_KEY)
-            except EncrpytionKey.DoesNotExist, e:
-                key = EncrpytionKey(chunkSize=ENCRYPTION_CHUNK_SIZE, key=ENCRYPTION_KEY)
+                key = EncryptionKey.objects.get(chunkSize=ENCRYPTION_CHUNK_SIZE, key=ENCRYPTION_KEY)
+            except EncryptionKey.DoesNotExist, e:
+                key = EncryptionKey(chunkSize=ENCRYPTION_CHUNK_SIZE, key=ENCRYPTION_KEY)
                 key.save()
             df = DownloadFile(item=uploadRequest.item, downloadLink=url, key=key)
             df.save()
