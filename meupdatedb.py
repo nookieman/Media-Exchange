@@ -83,6 +83,12 @@ def addSeries(directory):
                                 except Language.DoesNotExist, e:
                                     slanguage = Language(name=ssource)
                                     slanguage.save()
+                            directoryListing = ""
+                            dirlist = os.listdir(seasonPath)
+                            dirlist.sort()
+                            for directory in dirlist:
+                                directoryListing += "%s\n" % directory
+                            directoryListing = directoryListing[:-1]
                             try:
                                 season = Season.objects.get(serie=serie, number=seasonNumber, subname=ssubname, year=syear, language=slanguage, source=ssource)
                                 if season.mtime < smtime:
@@ -93,7 +99,7 @@ def addSeries(directory):
                             except Season.DoesNotExist, e:
                                 ssize = getDirSize(seasonPath)
                                 print (serieName, seasonNumber, ssubname, syear, ssource, ssize)
-                                season = Season(serie=serie, number=seasonNumber, subname=ssubname, path=seasonPath, year=syear, source=ssource, language=slanguage, mtime=smtime, size=ssize)
+                                season = Season(serie=serie, number=seasonNumber, subname=ssubname, path=seasonPath, year=syear, source=ssource, language=slanguage, mtime=smtime, size=ssize, directoryListing=directoryListing)
                                 season.save()
                         else:
                             print "WARNING: invalid season directory format '%s'" % seasonDirName

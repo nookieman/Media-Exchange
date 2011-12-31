@@ -29,6 +29,7 @@ class Season(Item):
     genre = models.ForeignKey('SerieGenre', blank=True, null=True)
     source = models.ForeignKey('SerieSource', blank=True, null=True)
     year = models.IntegerField(blank=True, null=True)
+    directoryListing = models.TextField(blank=True, null=True)
 
     def __unicode__(self):
         return "%s S%d" % (self.serie.name, self.number)

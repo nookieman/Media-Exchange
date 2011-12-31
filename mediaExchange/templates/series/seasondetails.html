@@ -26,9 +26,9 @@
 <div>Source: {{ season.source|escape }}</div>
 {% endif %}
 
-<div>IMDB: <a target="_blank" href="http://www.imdb.com/find?s=all&q={{ season.serie.name|urlencode }}{%if season.subname %}+{{ season.subname|urlencode }}{% endif %}">search</a></div>
-
 <div>Size: {{ size|escape }}</div>
+
+<div>IMDB: <a target="_blank" href="http://www.imdb.com/find?s=all&q={{ season.serie.name|urlencode }}{%if season.subname %}+{{ season.subname|urlencode }}{% endif %}">search</a></div>
 
 <div>Download:
 {% if uploadRequest.done %}
@@ -63,5 +63,14 @@ uploading ({{ uploadRequest.uploaded  }}%)
     {% endif %}
 {% endif %}
 
+{% if season.directoryListing %}
+<hr />
+<div>Directoy Listing:
+    <pre>
+{{ season.directoryListing|escape }}
+    </pre>
+</div>
+<hr />
+{% endif %}
 
 {% endblock %}
