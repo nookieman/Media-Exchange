@@ -14,6 +14,7 @@ urlpatterns = patterns('',
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root':'/home/chriz/workspace/mediaExchange/mediaExchange/media', 'show_indexes':False}),
     url(r'^upload/', include('mediaExchange.mediaUpload.urls')),
     url(r'^about/', include('mediaExchange.about.urls')),
+    url(r'^export/', include('mediaExchange.exporter.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
