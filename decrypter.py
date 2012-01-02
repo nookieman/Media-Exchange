@@ -35,7 +35,7 @@ def decryptFile(fileHandle, outfile, key, encryptionChunkSize):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Decrypt a file downloaded from MediaExchange.')
-    parser.add_argument('-k', '--keyfile', type=str, dest="keyfile", required=True, help="file containing the key to decrypt the file")
+    parser.add_argument('keyfile', metavar="key-file", type=str, help="file containing the key to decrypt the file")
     parser.add_argument('encfiles', metavar="enc-file", type=str, nargs="+", help="encrypted input files")
     parser.add_argument('outfile', metavar="out-file", type=str, help="output file")
     args = parser.parse_args()
