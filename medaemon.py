@@ -44,7 +44,7 @@ def main():
     renice()
     while not DONE:
 #        ur = UploadRequest.objects.filter(done = False, tries__in=range(3)).order_by('id')
-        ur = selectUploadRequest():
+        ur = selectUploadRequest()
         if ur:
             ur.tries += 1
             ur.save()
