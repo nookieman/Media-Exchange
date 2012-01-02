@@ -6,6 +6,24 @@ class EncryptionKey(models.Model):
     chunkSize = models.IntegerField(blank=False, null=False)
     key = models.TextField(blank=False, null=False)
 
+    @staticmethod
+    def fromFileHandle(fileHandle):
+        chunkSize = int(fileHandle.readline())
+        keydata = fileHandle.read()
+        return EncryptionKey.getOrCreate(chunkSize, keydata)
+
+
+    @staticmethod
+    def getOrCreate(chunkSize, keydata):
+        key = None
+        try:
+            key = EncryptionKey.objects.get(chunkSize=chunkSize, key=keydata)
+        except EncryptionKey.DoesNotExist, e:
+            key = EncryptionKey(chunkSize=chunkSize, key=keydata)
+            key.save()
+        return key
+
+
 class DownloadFile(models.Model):
     item = models.ForeignKey('Item')
     downloadLink = models.URLField(max_length=1024, blank=True, null=True)
@@ -16,8 +34,9 @@ class DownloadFile(models.Model):
 
 class Item(models.Model):
     name = models.CharField(max_length=256)
-    path = models.CharField(max_length=1024)
-    size = models.IntegerField()
+    path = models.CharField(max_length=1024, blank=True, null=True)
+    present = models.BooleanField(default=False)
+    size = models.IntegerField(blank=True, null=True)
     mtime = models.IntegerField(blank=True, null=True)
 
     def __unicode__(self):

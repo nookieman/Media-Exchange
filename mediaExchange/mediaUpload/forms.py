@@ -3,8 +3,11 @@ from django import forms
 
 class UploadForm(forms.Form):
     name = forms.CharField(label='Title', max_length=256)
-    file = forms.FileField(label='File')
+    file = forms.FileField(label='File', required=False)
     tar = forms.BooleanField(label='Tarfile', required=False)
+    dlLinks = forms.CharField(label='Download Links (comma separeted list)', required=False)
+    keyfile = forms.FileField(label='Key File', required=False)
+    size = forms.IntegerField(label='Size (in bytes)', required=False)
 
 class MovieUploadForm(UploadForm):
     subname = forms.CharField(label='Subtitle', max_length=256, required=False)

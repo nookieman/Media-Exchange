@@ -123,12 +123,7 @@ def upload(uploadRequest, files):
     for file in files:
         url = uploadFile(uploadRequest, file)
         if url:
-            key = None
-            try:
-                key = EncryptionKey.objects.get(chunkSize=ENCRYPTION_CHUNK_SIZE, key=ENCRYPTION_KEY)
-            except EncryptionKey.DoesNotExist, e:
-                key = EncryptionKey(chunkSize=ENCRYPTION_CHUNK_SIZE, key=ENCRYPTION_KEY)
-                key.save()
+            key = EncryptionKey.getOrCreate(ENCRYPTION_CHUNK_SIZE, ENCRYPTION_KEY)
             df = DownloadFile(item=uploadRequest.item, downloadLink=url, key=key)
             df.save()
         else:

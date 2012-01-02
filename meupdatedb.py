@@ -40,7 +40,7 @@ def addMovies(directory):
                 else:
                     msize = getDirSize(mpath)
                     print (mname, msubname, myear, msource, msize)
-                    m = Movie(name=mname, subname=msubname, path=mpath, year=myear, source=msource, mtime=mmtime, size=msize)
+                    m = Movie(name=mname, subname=msubname, path=mpath, year=myear, source=msource, mtime=mmtime, size=msize, present=True)
                     m.save()
             else:
                 print "WARNING: invalid movie directory format '%s'" % dirname
@@ -99,7 +99,7 @@ def addSeries(directory):
                             except Season.DoesNotExist, e:
                                 ssize = getDirSize(seasonPath)
                                 print (serieName, seasonNumber, ssubname, syear, ssource, ssize)
-                                season = Season(serie=serie, number=seasonNumber, subname=ssubname, path=seasonPath, year=syear, source=ssource, language=slanguage, mtime=smtime, size=ssize, directoryListing=directoryListing)
+                                season = Season(serie=serie, number=seasonNumber, subname=ssubname, path=seasonPath, year=syear, source=ssource, language=slanguage, mtime=smtime, size=ssize, directoryListing=directoryListing, present=True)
                                 season.save()
                         else:
                             print "WARNING: invalid season directory format '%s'" % seasonDirName
