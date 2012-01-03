@@ -39,15 +39,17 @@ def getSerieDetails(serie):
     return render_to_response('series/seriesdetails.html', {'serie':serie, 'seasons':seasons, 'uploadRequests':urs, 'doneUploadRequests':doneurs})
 
 def getSeasonDetails(season):
+    sizeString = "Unknown"
     size = season.size
-    s = (size, 'byte')
-    if size > 1073741824:
-        s = (round(size/1073741824.0, 2), 'GB')
-    elif size > 1048576:
-        s = (round(size/1048576.0, 2), 'MB')
-    elif size > 1024:
-        s = (round(size/1024.0, 2), 'KB')
-    sizeString = "%.2f %s" % s
+    if size:
+        s = (size, 'byte')
+        if size > 1073741824:
+            s = (round(size/1073741824.0, 2), 'GB')
+        elif size > 1048576:
+            s = (round(size/1048576.0, 2), 'MB')
+        elif size > 1024:
+            s = (round(size/1024.0, 2), 'KB')
+        sizeString = "%.2f %s" % s
     downloadFiles = DownloadFile.objects.filter(item=season)
     ur = UploadRequest.objects.filter(item=season)
     if ur:
