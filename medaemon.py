@@ -41,7 +41,7 @@ MIN_NICE_LEVEL = 15
 DONE = False
 
 def main():
-    renice()
+    renice(MIN_NICE_LEVEL)
     while not DONE:
 #        ur = UploadRequest.objects.filter(done = False, tries__in=range(3)).order_by('id')
         ur = selectUploadRequest()
@@ -56,11 +56,11 @@ def main():
         else:
             time.sleep(10)
 
-def renice():
+def renice(minNice):
     nice = os.nice(0)
-    if nice < MIN_NICE_LEVEL:
-        nice = os.nice(MIN_NICE_LEVEL-nice)
-        assert nice == MIN_NICE_LEVEL
+    if nice < minNice:
+        nice = os.nice(minNice-nice)
+        assert nice == minNice
 
 def selectUploadRequest():
     ur = None
@@ -73,27 +73,32 @@ def selectUploadRequest():
     return ur
 
 
-def pack(item, uploadRequest):
+def pack(item, uploadRequest=None):
     print 'pack(', item, ',', uploadRequest,')'
     encfiles = []
     taredFile = None
     encfile = None
     try:
-        uploadRequest.state=STATE_TARING
-        uploadRequest.save()
+        if uploadRequest:
+            uploadRequest.state=STATE_TARING
+            uploadRequest.save()
         taredFile = tarDownload(item.path)
-        uploadRequest.state=STATE_ENCRYPTING
-        uploadRequest.save()
+        if uploadRequest:
+            uploadRequest.state=STATE_ENCRYPTING
+            uploadRequest.save()
         encfile = encryptDownload(uploadRequest, taredFile)
-        uploadRequest.state=STATE_SPLITTING
-        uploadRequest.save()
+        if uploadRequest:
+            uploadRequest.state=STATE_SPLITTING
+            uploadRequest.save()
         encfiles = splitFile(uploadRequest, encfile)
-        uploadRequest.state=STATE_UPLOADING
-        uploadRequest.save()
+        if uploadRequest:
+            uploadRequest.state=STATE_UPLOADING
+            uploadRequest.save()
         upload(uploadRequest=uploadRequest, files=encfiles)
     except KeyboardInterrupt, e:
-        uploadRequest.state=STATE_QUEUED
-        uploadRequest.save()
+        if uploadRequest:
+            uploadRequest.state=STATE_QUEUED
+            uploadRequest.save()
         deletefiles = []
         if taredFile:
             deletefiles.append(taredFile)
@@ -107,8 +112,9 @@ def pack(item, uploadRequest):
     except:
         print 'ERROR: upload failed:'
         print traceback.print_exc()
-    uploadRequest.state=STATE_QUEUED
-    uploadRequest.save()
+    if uploadRequest:
+        uploadRequest.state=STATE_QUEUED
+        uploadRequest.save()
     deletefiles = []
     if taredFile:
         deletefiles.append(taredFile)
