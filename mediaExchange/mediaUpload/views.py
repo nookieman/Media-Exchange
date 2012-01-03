@@ -127,9 +127,13 @@ def handleMovie(request):
                     m.save()
                     form = None
                     error = 'Thank you for contributing.'
-                elif form.cleaned_data['dlLinks'] and form.cleaned_data['keyfile']:
+                elif (form.cleaned_data['dlLinks'] or form.cleaned_data['dlLinksFile']) and form.cleaned_data['keyfile']:
                     key = EncryptionKey.fromFileHandle(form.cleaned_data['keyfile'])
-                    dlUrls = [ url.strip() for url in form.cleaned_data['dlLinks'].split(',')]
+                    dlUrls = []
+                    if form.cleaned_data['dlLinks']:
+                        dlUrls = [ url.strip() for url in form.cleaned_data['dlLinks'].split(',')]
+                    else:
+                        dlUrls = [ url.strip() for url in form.cleaned_data['dlLinksFile'] ]
                     filesize = None
                     if form.cleaned_data['size']:
                         filesize = form.cleaned_data['size']
@@ -222,9 +226,13 @@ def handleSerie(request):
                     season.save()
                     form = None
                     error = 'Thank you for contributing.'
-                elif form.cleaned_data['dlLinks'] and form.cleaned_data['keyfile']:
+                elif (form.cleaned_data['dlLinks'] or form.cleaned_data['dlLinksFile']) and form.cleaned_data['keyfile']:
                     key = EncryptionKey.fromFileHandle(form.cleaned_data['keyfile'])
-                    dlUrls = [ url.strip() for url in form.cleaned_data['dlLinks'].split(',')]
+                    dlUrls = []
+                    if form.cleaned_data['dlLinks']:
+                        dlUrls = [ url.strip() for url in form.cleaned_data['dlLinks'].split(',')]
+                    else:
+                        dlUrls = [ url.strip() for url in form.cleaned_data['dlLinksFile'] ]
                     filesize = None
                     if form.cleaned_data['size']:
                         filesize = form.cleaned_data['size']

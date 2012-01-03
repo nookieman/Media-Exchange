@@ -6,6 +6,7 @@ class UploadForm(forms.Form):
     file = forms.FileField(label='File', required=False)
     tar = forms.BooleanField(label='Tarfile', required=False)
     dlLinks = forms.CharField(label='Download Links (comma separeted list)', required=False)
+    dlLinksFile = forms.FileField(label='Download Links File (seperated by line breaks)', required=False)
     keyfile = forms.FileField(label='Key File', required=False)
     size = forms.IntegerField(label='Size (in bytes)', required=False)
 
