@@ -28,12 +28,14 @@ class ProgressUploadHandler(FileUploadHandler):
 #        pass
 
     def upload_complete(self):
-        del self.request.session['upload_progress_%s' % self.cache_key]
+        if self.cache_key and 'upload_progress_%s' % self.cache_key in self.request.session:
+            del self.request.session['upload_progress_%s' % self.cache_key]
 
     def receive_data_chunk(self, raw_data, start):
-        data = self.request.session['upload_progress_%s' % self.cache_key]
-        data['uploaded'] += len(raw_data)
-        self.request.session['upload_progress_%s' % self.cache_key] = data
-        self.request.session.save()
+        if self.cache_key and 'upload_progress_%s' % self.cache_key in self.request.session:
+            data = self.request.session['upload_progress_%s' % self.cache_key]
+            data['uploaded'] += len(raw_data)
+            self.request.session['upload_progress_%s' % self.cache_key] = data
+            self.request.session.save()
         return raw_data
 
