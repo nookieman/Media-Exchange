@@ -11,10 +11,22 @@ import tempfile
 
 from Crypto.Cipher import Blowfish
 
-from medaemon import renice, cleanup
 from MultiUpload import MultiUpload
 
+def cleanup(filelist):
+    print 'cleanup(%s) called' % (str(filelist))
+    for file in filelist:
+        if os.path.isfile(file):
+            os.remove(file)
+
+def renice(minNice):
+    nice = os.nice(0)
+    if nice < minNice:
+        nice = os.nice(minNice-nice)
+        assert nice == minNice
+
 def readKeyfile(keyfile):
+    print 'readKeyfile', (keyfile,)
     fh = open(keyfile)
     chunksize = int(fh.readline())
     key = fh.read()
@@ -24,7 +36,6 @@ def readKeyfile(keyfile):
 def tarFiles(files):
     print "tarFiles", (files,)
     fh = tempfile.NamedTemporaryFile(suffix=".tar", delete=False)
-    print fh.tell()
     for file in files:
         tar = tarfile.open(mode="w", fileobj=fh.file)
         tar.add(file)
@@ -36,7 +47,7 @@ def createHash(files):
     hashString = ";".join(files)
     return hashlib.sha1(hashString).hexdigest()
 
-def encryptFile(file, outfilename, chunksize, key):
+def encryptFile(file, outfilename, chunksize, key, uploadRequest=None):
     print "encryptFile", (file, outfilename, chunksize, "...")
     tmpDir = tempfile.mkdtemp()
     tmpfilePath = "%s/%s.tar" % (tmpDir, outfilename)
@@ -49,11 +60,14 @@ def encryptFile(file, outfilename, chunksize, key):
         destfh.write(blowfish.encrypt(sourcefh.read(chunksize)))
         percent = int((i+1)/float(parts)*100.0)
         print percent, "%"
+        if uploadRequest:
+            uploadRequest.encrypted = percent
+            uploadRequest.save()
     destfh.close()
     sourcefh.close()
     return tmpfilePath
 
-def splitFile(file, maxSize):
+def splitFile(file, maxSize, uploadRequest=None):
     print "splitFile", (file, maxSize)
     result = [file]
     fileSize = os.stat(file).st_size
@@ -62,23 +76,30 @@ def splitFile(file, maxSize):
         parts = int(math.ceil(float(fileSize) / float(maxSize)))
         sfh = open(file, 'rb')
         for part in range(parts):
-            tmpfile = "%s.%3d" % (file, part)
+            tmpfile = "%s.%03d" % (file, part)
             print 'packing part', part, 'filename:', tmpfile
             dfh = open(tmpfile, 'wb')
-            for i in range(1000):
-                dfh.write(sfh.read(int(math.ceil(float(maxSize)/float(1000)))))
-                percent = int((part+1)*(float(i+1)/1000.0)/parts*100)
+            for i in range(100):
+                dfh.write(sfh.read(int(math.ceil(float(maxSize)/float(100)))))
+#                percent = int((part+1)*(float(i+1)/100.0)/parts*100)
+                percent = int((100.0*part/float(parts))+(((i+1)/100.0)*(100.0/float(parts))))
                 print percent, "%"
+                if uploadRequest:
+                    uploadRequest.splitted = percent
+                    uploadRequest.save()
             dfh.close()
             result.append(tmpfile)
     return result
 
-def uploadFiles(files):
-    print 'uploadFiles', (files,)
+def uploadFiles(files, fileHoster, uploadRequest=None):
+    print 'uploadFiles', (files, fileHoster, uploadRequest)
     links = []
-    mu = MultiUpload()
     for file in files:
-        links.append(mu.uploadData(file))
+        link = fileHoster.uploadData(file, uploadRequest)
+        if link:
+            links.append(link)
+        else:
+            print "ERROR: didn't find the url for the DownloadFile (%s)" % file
     return links
 
 if __name__=="__main__":
@@ -100,13 +121,14 @@ if __name__=="__main__":
 
 #    atexit.register()
 
+    mu = MultiUpload()
     tarFile = tarFiles(args.inputfiles)
     hashname = createHash(args.inputfiles)
     encryptedFile = encryptFile(tarFile, hashname, chunksize, key)
     cleanup(tarFile)
-    splittedFiles = splitFile(encryptedFile, MultiUpload.MAX_FILESIZE)
+    splittedFiles = splitFile(encryptedFile, mu.MAX_FILESIZE)
     cleanup(encryptedFile)
-    links = uploadFiles(files=splittedFiles)
+    links = uploadFiles(files=splittedFiles, fileHoster=mu)
     print links
     cleanup(splittedFiles)
     if not os.path.exists(args.outputfolder):
