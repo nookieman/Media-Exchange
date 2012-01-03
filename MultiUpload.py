@@ -46,7 +46,7 @@ class MultiUpload(FileHoster):
         return uploadURL, uploadIdentifier, usercookie
 
 
-    def uploadData(self, filename, uploadRequest):
+    def uploadData(self, filename, uploadRequest=None):
         uploadURL, uploadIdentifier, usercookie = self.getNeededValues()
         register_openers()
         fh = open(filename)
@@ -125,8 +125,9 @@ class MultiUpload(FileHoster):
                 "description_0" : "",
             })
         headers.update({'User-Agent' : 'Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.0.10) Gecko/2009042523 Ubuntu/9.04 (jaunty) Firefox/3.0.10'})
-        t = threading.Thread(target=self.updateUploadState, args=(uploadRequest, fh, os.stat(filename).st_size))
-        t.start()
+        if uploadRequest:
+            t = threading.Thread(target=self.updateUploadState, args=(uploadRequest, fh, os.stat(filename).st_size))
+            t.start()
         request = urllib2.Request(uploadURL, datagen, headers)
         source = urllib2.urlopen(request).read()
         match = self.DOWNLOADLINK_REGEX.search(source)
