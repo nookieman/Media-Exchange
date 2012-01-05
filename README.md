@@ -47,6 +47,13 @@ movies = /home/chriz/media/Movies
 series = /home/chriz/media/Series,/media/disk42/Series
 ```
 
+Before running the script you need to set the DJANGO_SETTINGS_MODULE environment
+variable:
+
+```
+export DJANGO_SETTINGS_MODULE="mediaExchange.settings"
+```
+
 The script will parse through the folders and fill the database. There is some
 markup to fill the according fields. The movie subfolders should be named after the
 following schema:
