@@ -3,10 +3,8 @@
  * Beim Filehoster upload auch das taren mit progress.
  * Dateinamen filtern sollte positionsunabhaengig funktionieren, also es muss nicht erst datum dann source dann sprache stehen.
  * make filing requests possible
- * allow rating of movie
  * create personal suggestions based on your ratings and ratings of others
  * create best rated lists
- * add comments to items
  * show file listings of items (done for season (really for movies?))
  * add recently uploaded (to file hoster) to index
  * check if folder is available before trying to upload (better before adding the UploadRequest), otherwise show error, that its temporarily not available
