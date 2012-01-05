@@ -1,3 +1,5 @@
+import os.path
+
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
@@ -58,12 +60,14 @@ def getDetails(request, movie):
     wvotes = Vote.objects.filter(movie=movie, watchable=True)
     nvotes = Vote.objects.filter(movie=movie, watchable=False)
     urs = UploadRequest.objects.filter(done=False).order_by('id')
+    pathAvailable = movie.path != None and os.path.exists(movie.path)
     c.update(csrf(request))
-    c.update({'movie':movie,
-              'size':sizeString,
-              'downloadFiles':downloadFiles,
-              'uploadRequest':ur,
-              'wvotes':wvotes,
-              'nvotes':nvotes,
-              'uploadRequests':urs})
+    c.update({'movie'          : movie,
+              'size'           : sizeString,
+              'downloadFiles'  : downloadFiles,
+              'uploadRequest'  : ur,
+              'wvotes'         : wvotes,
+              'nvotes'         : nvotes,
+              'uploadRequests' : urs,
+              'pathAvailable'  : pathAvailable})
     return render_to_response('movies/details.html', c)

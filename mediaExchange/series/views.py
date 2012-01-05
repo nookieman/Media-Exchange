@@ -1,3 +1,5 @@
+import os.path
+
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
 
@@ -39,6 +41,7 @@ def getSerieDetails(serie):
     return render_to_response('series/seriesdetails.html', {'serie':serie, 'seasons':seasons, 'uploadRequests':urs, 'doneUploadRequests':doneurs})
 
 def getSeasonDetails(season):
+    c = {}
     sizeString = "Unknown"
     size = season.size
     if size:
@@ -55,6 +58,14 @@ def getSeasonDetails(season):
     if ur:
         ur = ur[0]
     urs = UploadRequest.objects.filter(done=False).order_by('id')
-    return render_to_response('series/seasondetails.html', {'serie':season.serie, 'season':season, 'size':sizeString, 'downloadFiles':downloadFiles, 'uploadRequest':ur, 'uploadRequests':urs})
+    pathAvailable = season.path != None and os.path.exists(season.path)
+    c.update({'serie'          : season.serie,
+              'season'         : season,
+              'size'           : sizeString,
+              'downloadFiles'  : downloadFiles,
+              'uploadRequest'  : ur,
+              'uploadRequests' : urs,
+              'pathAvailable'  : pathAvailable})
+    return render_to_response('series/seasondetails.html', c)
 
 

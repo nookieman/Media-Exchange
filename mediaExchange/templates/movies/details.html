@@ -61,8 +61,16 @@ uploading ({{ uploadRequest.uploaded  }}%)
         </span>.
 
     {% else %}
-        {% if not downloadFiles and movie.present %}
+        {% if not downloadFiles %}
+            {% if movie.present %}
+                {% if pathAvailable %}
 <a href="/movies/create/{{ movie.id }}/">Create Download</a>
+                {% else %}
+The files are currently not available, but you can create a request, that will be served later, when the files are available again <a href="/movies/create/{{ movie.id }}/">here</a>.
+                {% endif %}
+            {% else %}
+Sorry, the files are not locally available and therefore no download links can be created.
+            {% endif%}
         {% endif %}
     {% endif %}
 {% endif %}
