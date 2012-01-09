@@ -123,7 +123,7 @@ def handleMovie(request):
                     m = Movie(name=form.cleaned_data['name'], path=path,
                               size=filesize, mtime=mtime, subname=subname,
                               language=language, year=year, genre=genre,
-                              source=source, present=True)
+                              source=source, present=True, creator=request.user)
                     m.save()
                     form = None
                     error = 'Thank you for contributing.'
@@ -140,7 +140,7 @@ def handleMovie(request):
                     m = Movie(name=form.cleaned_data['name'],
                               size=filesize, subname=subname,
                               language=language, year=year, genre=genre,
-                              source=source, present=False)
+                              source=source, present=False, creator=request.user)
                     m.save()
                     for url in dlUrls:
                         df = DownloadFile(item=m, downloadLink=url, key=key)
@@ -222,7 +222,8 @@ def handleSerie(request):
                     season = Season(serie=serie, subname=subname, number=number,
                                     path=path, size=filesize, mtime=mtime,
                                     language=language, year=year, genre=genre,
-                                    source=source, present=True)
+                                    source=source, present=True,
+                                    creator=request.user)
                     season.save()
                     form = None
                     error = 'Thank you for contributing.'
@@ -238,7 +239,8 @@ def handleSerie(request):
                         filesize = form.cleaned_data['size']
                     season = Season(serie=serie, size=filesize, subname=subname,
                                     number=number, language=language, year=year,
-                                    genre=genre, source=source, present=False)
+                                    genre=genre, source=source, present=False,
+                                    creator=request.user)
                     season.save()
                     for url in dlUrls:
                         df = DownloadFile(item=season, downloadLink=url, key=key)
