@@ -33,7 +33,7 @@ class DownloadFile(models.Model):
         return "<DownloadFile %s (%s)" % (str(self.item), str(self.downloadLink))
 
 class Item(models.Model):
-    creator = models.ForeignKey(User, blank=True, null=False)
+    creator = models.ForeignKey(User, blank=True, null=True)
     name = models.CharField(max_length=256)
     path = models.CharField(max_length=1024, blank=True, null=True)
     present = models.BooleanField(default=False)
