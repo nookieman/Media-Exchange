@@ -2,6 +2,7 @@ import os.path
 
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.core.context_processors import csrf
 
 from mediaExchange.movies.models import Movie, UploadRequest, DownloadFile
 from mediaExchange.series.models import Serie, Season
@@ -21,7 +22,7 @@ def seriesseriedetails(request, serie_id):
 @login_required
 def seriesseasondetails(request, season_id):
     season = get_object_or_404(Season, pk=season_id)
-    return getSeasonDetails(season)
+    return getSeasonDetails(request, season)
 
 @login_required
 def seriesseasoncreate(request, season_id):
@@ -32,7 +33,7 @@ def seriesseasoncreate(request, season_id):
         if not ur:
             ur = UploadRequest(item=season, user=request.user)
             ur.save()
-    return getSeasonDetails(season)
+    return getSeasonDetails(request, season)
 
 def getSerieDetails(serie):
     seasons = Season.objects.filter(serie=serie)
@@ -40,7 +41,7 @@ def getSerieDetails(serie):
     doneurs = UploadRequest.objects.filter(done=True)
     return render_to_response('series/seriesdetails.html', {'serie':serie, 'seasons':seasons, 'uploadRequests':urs, 'doneUploadRequests':doneurs})
 
-def getSeasonDetails(season):
+def getSeasonDetails(request, season, message=None):
     c = {}
     sizeString = "Unknown"
     size = season.size
@@ -65,7 +66,20 @@ def getSeasonDetails(season):
               'downloadFiles'  : downloadFiles,
               'uploadRequest'  : ur,
               'uploadRequests' : urs,
-              'pathAvailable'  : pathAvailable})
+              'pathAvailable'  : pathAvailable,
+              'message'        : message})
+    c.update(csrf(request))
     return render_to_response('series/seasondetails.html', c)
 
+def seriesseasonrequest(request, season_id):
+    c = {}
+    season = get_object_or_404(Season, pk=season_id)
+    if season.creator:
+        sendSeasonRequestMail(season)
+        msg = "The contributor received a message of your request."
+    else:
+        msg = "Sorry the contributor of this item is unknown."
+    return getSeasonDetails(request, season, msg)
 
+def sendSeasonRequestMail(season):
+    pass

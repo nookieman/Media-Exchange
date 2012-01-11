@@ -76,11 +76,17 @@ The files are currently not available, but you can create a request, that will b
                 {% endif %}
             {% else %}
 Sorry, the files are not locally available and therefore no download links can be created.
+                {% if movie.creator %}
+<a href="/movies/request/{{ movie.id }}">Request upload of the movie.</a>
+                {% endif %}
             {% endif%}
         {% endif %}
     {% endif %}
 {% endif %}
 
+{% if message %}
+<div><b>Message: {{ message|escape }}</b></div>
+{% endif %}
 
 </div>
 {% if wvotes %}

@@ -39,7 +39,7 @@ def moviescreate(request, movie_id):
             ur.save()
     return getDetails(request, movie)
 
-def getDetails(request, movie):
+def getDetails(request, movie, message=None):
     c = {}
 
     sizeString = "Unknown"
@@ -69,5 +69,19 @@ def getDetails(request, movie):
               'wvotes'         : wvotes,
               'nvotes'         : nvotes,
               'uploadRequests' : urs,
-              'pathAvailable'  : pathAvailable})
+              'pathAvailable'  : pathAvailable,
+              'message'        : message})
     return render_to_response('movies/details.html', c)
+
+def moviesrequest(request, movie_id):
+    c = {}
+    movie = get_object_or_404(Movie, pk=movie_id)
+    if movie.creator:
+        sendMovieRequestMail(movie)
+        msg = "The contributor received a message of your request."
+    else:
+        msg = "Sorry the contributor of this item is unknown."
+    return getDetails(request, movie, msg)
+
+def sendMovieRequestMail(movie):
+    pass
