@@ -108,8 +108,17 @@ def handleMovie(request):
                 if form.cleaned_data['year']:
                     year = form.cleaned_data['year']
 
+                filesize = None
+                if form.cleaned_data['size']:
+                    filesize = form.cleaned_data['size']
+
+                m = Movie(name=form.cleaned_data['name'], size=filesize,
+                          subname=subname, language=language, year=year,
+                          genre=genre, source=source, present=False,
+                          creator=request.user)
+                m.save()
                 if form.cleaned_data['file']:
-                    path = generateDestinationPath(form)
+                    m.path = generateDestinationPath(form)
                     if form.cleaned_data['tar']:
                         tf = tarfile.open(fileobj=form.cleaned_data['file'])
                         tf.extractall(path=path)
@@ -118,12 +127,9 @@ def handleMovie(request):
                         for chunk in form.cleaned_data['file'].chunks():
                             destination.write(chunk)
                         destination.close()
-                    filesize = form.cleaned_data['file'].size
-                    mtime = int(os.stat(path).st_mtime)
-                    m = Movie(name=form.cleaned_data['name'], path=path,
-                              size=filesize, mtime=mtime, subname=subname,
-                              language=language, year=year, genre=genre,
-                              source=source, present=True, creator=request.user)
+                    m.size = form.cleaned_data['file'].size
+                    m.mtime = int(os.stat(path).st_mtime)
+                    m.present = True
                     m.save()
                     form = None
                     error = 'Thank you for contributing.'
@@ -134,21 +140,14 @@ def handleMovie(request):
                         dlUrls = [ url.strip() for url in form.cleaned_data['dlLinks'].split(',')]
                     else:
                         dlUrls = [ url.strip() for url in form.cleaned_data['dlLinksFile'] ]
-                    filesize = None
-                    if form.cleaned_data['size']:
-                        filesize = form.cleaned_data['size']
-                    m = Movie(name=form.cleaned_data['name'],
-                              size=filesize, subname=subname,
-                              language=language, year=year, genre=genre,
-                              source=source, present=False, creator=request.user)
-                    m.save()
                     for url in dlUrls:
                         df = DownloadFile(item=m, downloadLink=url, key=key)
                         df.save()
                     form = None
                     error = 'Thank you for contributing.'
                 else:
-                    error = "You need to either choose a file or provide download links and a corresponding key file."
+                    form = None
+                    error = "Thank you for enlisting your item. You will be contacted when someone requests this item."
             except Exception, e:
                 error = 'Having an error: %s' % (e)
         else:
@@ -206,8 +205,19 @@ def handleSerie(request):
                 year = None
                 if form.cleaned_data['year']:
                     year = form.cleaned_data['year']
+
+                filesize = None
+                if form.cleaned_data['size']:
+                    filesize = form.cleaned_data['size']
+
+                season = Season(serie=serie, size=filesize, subname=subname,
+                                number=number, language=language, year=year,
+                                genre=genre, source=source, present=False,
+                                creator=request.user)
+                season.save()
+
                 if form.cleaned_data['file']:
-                    path = generateDestinationPath(form)
+                    season.path = generateDestinationPath(form)
                     if form.cleaned_data['tar']:
                         tf = tarfile.open(fileobj=form.cleaned_data['file'])
                         tf.extractall(path=path)
@@ -216,14 +226,9 @@ def handleSerie(request):
                         for chunk in form.cleaned_data['file'].chunks():
                             destination.write(chunk)
                         destination.close()
-                    filesize = form.cleaned_data['file'].size
-                    mtime = int(os.stat(path).st_mtime)
-
-                    season = Season(serie=serie, subname=subname, number=number,
-                                    path=path, size=filesize, mtime=mtime,
-                                    language=language, year=year, genre=genre,
-                                    source=source, present=True,
-                                    creator=request.user)
+                    season.filesize = form.cleaned_data['file'].size
+                    season.mtime = int(os.stat(path).st_mtime)
+                    season.present = True
                     season.save()
                     form = None
                     error = 'Thank you for contributing.'
@@ -234,23 +239,14 @@ def handleSerie(request):
                         dlUrls = [ url.strip() for url in form.cleaned_data['dlLinks'].split(',')]
                     else:
                         dlUrls = [ url.strip() for url in form.cleaned_data['dlLinksFile'] ]
-                    filesize = None
-                    if form.cleaned_data['size']:
-                        filesize = form.cleaned_data['size']
-                    season = Season(serie=serie, size=filesize, subname=subname,
-                                    number=number, language=language, year=year,
-                                    genre=genre, source=source, present=False,
-                                    creator=request.user)
-                    season.save()
                     for url in dlUrls:
                         df = DownloadFile(item=season, downloadLink=url, key=key)
                         df.save()
                     form = None
                     error = 'Thank you for contributing.'
                 else:
-                    if serieCreated:
-                        serie.delete()
-                    error = "You need to either choose a file or provide download links and a corresponding key file."
+                    form = None
+                    error = "Thank you for enlisting your item. You will be contacted when someone requests this item."
             except Exception, e:
                 error = 'Having an error: %s' % str(e)
         else:
