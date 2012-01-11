@@ -265,7 +265,7 @@ def movieExists(form):
     for rm in rms:
         if form.cleaned_data['subname'] == rm.subname or (not form.cleaned_data['subname'] and not rm.subname):
             if form.cleaned_data['year'] == rm.year or (not form.cleaned_data['year'] and not rm.year):
-                if form.cleaned_data['source'] == season.source or (not form.cleaned_data['source'] and not season.source):
+                if form.cleaned_data['source'] == rm.source or (not form.cleaned_data['source'] and not rm.source):
                     if form.cleaned_data['language'] == rm.language or (not form.cleaned_data['language'] and not rm.language):
                         result = True
                         break
