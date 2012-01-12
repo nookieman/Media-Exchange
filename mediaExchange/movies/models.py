@@ -87,6 +87,17 @@ class Movie(Item):
             d.update({'source' : self.source.name})
         return d
 
+class ItemRequest(models.Model):
+    requester = models.ForeignKey(User)
+    item = models.ForeignKey('Item')
+    processed = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __unicode__(self):
+        return "%s %s (%s)" % (str(self.requester),
+                               str(self.item),
+                               "processed" if self.processed else "not processed")
+
 class UploadRequest(models.Model):
     user = models.ForeignKey(User)
     item = models.ForeignKey('Item')
