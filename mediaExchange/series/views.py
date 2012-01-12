@@ -4,7 +4,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 
-from mediaExchange.movies.models import Movie, UploadRequest, DownloadFile
+from mediaExchange.movies.models import Movie, UploadRequest, DownloadFile, ItemRequest
 from mediaExchange.series.models import Serie, Season
 
 
@@ -71,10 +71,12 @@ def getSeasonDetails(request, season, message=None):
     c.update(csrf(request))
     return render_to_response('series/seasondetails.html', c)
 
+@login_required
 def seriesseasonrequest(request, season_id):
     c = {}
     season = get_object_or_404(Season, pk=season_id)
     if season.creator:
+        itemRequest(requester=request.user, item=season).save()
         sendSeasonRequestMail(season)
         msg = "The contributor received a message of your request."
     else:

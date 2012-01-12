@@ -4,7 +4,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 
-from mediaExchange.movies.models import Movie, UploadRequest, DownloadFile, Vote
+from mediaExchange.movies.models import Movie, UploadRequest, DownloadFile, ItemRequest, Vote
 
 @login_required
 def moviesindex(request):
@@ -73,10 +73,12 @@ def getDetails(request, movie, message=None):
               'message'        : message})
     return render_to_response('movies/details.html', c)
 
+@login_required
 def moviesrequest(request, movie_id):
     c = {}
     movie = get_object_or_404(Movie, pk=movie_id)
     if movie.creator:
+        ItemRequest(requester=request.user, item=movie).save()
         sendMovieRequestMail(movie)
         msg = "The contributor received a message of your request."
     else:
