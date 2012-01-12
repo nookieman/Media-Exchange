@@ -1,4 +1,4 @@
-from mediaExchange.movies.models import Movie, Language, MovieGenre, MovieSource, DownloadFile, UploadRequest, Vote
+from mediaExchange.movies.models import Movie, Language, MovieGenre, MovieSource, DownloadFile, ItemRequest, UploadRequest, Vote
 from django.contrib import admin
 
 admin.site.register(Movie)
