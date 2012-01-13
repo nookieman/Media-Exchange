@@ -86,7 +86,7 @@ def seriesseasonrequest(request, season_id):
     return getSeasonDetails(request, season, msg)
 
 def sendSeasonRequestMail(season, requester):
-    subject "Request for series '%s' season %d from '%s'" % (season.series.name,
+    subject = "Request for series '%s' season %d from '%s'" % (season.series.name,
                                                              season.number,
                                                              str(requester))
     body = "%s has request the series '%s' season %d" % (str(requester),
