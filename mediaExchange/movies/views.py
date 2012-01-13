@@ -1,4 +1,6 @@
 import os.path
+import smtplib
+from email.mime.text import MIMEText
 
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -78,12 +80,33 @@ def moviesrequest(request, movie_id):
     c = {}
     movie = get_object_or_404(Movie, pk=movie_id)
     if movie.creator:
-        ItemRequest(requester=request.user, item=movie).save()
-        sendMovieRequestMail(movie)
-        msg = "The contributor received a message of your request."
+        msg = sendMovieRequestMail(movie, request.user)
+        if not msg:
+            ItemRequest(requester=request.user, item=movie).save()
+            msg = "The contributor received a message of your request."
     else:
         msg = "Sorry the contributor of this item is unknown."
     return getDetails(request, movie, msg)
 
-def sendMovieRequestMail(movie):
-    pass
+def sendMovieRequestMail(movie, requester):
+    movietitle = "%s" % movie.name
+    if movie.subname:
+        movietitle += " - %s" % movie.subname
+    subject = "Request for '%s' from '%s'" % (movietitle, str(requester))
+    body = "%s has requested movie '%s'" % (movietitle, str(requester))
+    if movie.source:
+        body += "in %s" % movie.source.name
+    return sendMail([movie.creator.email], subject, body)
+
+def sendMail(rcpts, subject, body):
+    sender = "mediaExchange@foobar.com"
+    msg = MIMEText(body)
+    msg['Subject'] = subject
+    msg['From'] = sender
+    msg['To'] = ", ".join(rcpts)
+    try:
+        server = smtplib.SMTP('localhost')
+        server.sendmail(sender, rcpts, msg.as_string())
+        server.quit()
+    except Exception, e:
+        return "Sorry, Unable to request item: '%s'" % str(e)

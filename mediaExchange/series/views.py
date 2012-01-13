@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 
 from mediaExchange.movies.models import Movie, UploadRequest, DownloadFile, ItemRequest
+from mediaExchange.movies.views import sendMail
 from mediaExchange.series.models import Serie, Season
 
 
@@ -76,12 +77,23 @@ def seriesseasonrequest(request, season_id):
     c = {}
     season = get_object_or_404(Season, pk=season_id)
     if season.creator:
-        itemRequest(requester=request.user, item=season).save()
-        sendSeasonRequestMail(season)
-        msg = "The contributor received a message of your request."
+        msg = sendSeasonRequestMail(season, request.user)
+        if not msg:
+            itemRequest(requester=request.user, item=season).save()
+            msg = "The contributor received a message of your request."
     else:
         msg = "Sorry the contributor of this item is unknown."
     return getSeasonDetails(request, season, msg)
 
-def sendSeasonRequestMail(season):
-    pass
+def sendSeasonRequestMail(season, requester):
+    subject "Request for series '%s' season %d from '%s'" % (season.series.name,
+                                                             season.number,
+                                                             str(requester))
+    body = "%s has request the series '%s' season %d" % (str(requester),
+                                                         season.series.name,
+                                                         season.number)
+    if season.subname:
+        body += " (%s)" % season.subname
+    if season.source:
+        body += "in %s" % season.source.name
+    return sendMail([season.creator.mail], subject, body)
