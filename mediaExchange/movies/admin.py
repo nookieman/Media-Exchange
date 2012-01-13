@@ -1,4 +1,4 @@
-from mediaExchange.movies.models import Movie, Language, MovieGenre, MovieSource, DownloadFile, ItemRequest, UploadRequest, Vote
+from mediaExchange.movies.models import Movie, Language, MovieGenre, MovieSource, DownloadFile, ItemRequest, UploadRequest, Vote, EncryptionKey
 from django.contrib import admin
 
 admin.site.register(Movie)
@@ -9,3 +9,4 @@ admin.site.register(DownloadFile)
 admin.site.register(ItemRequest)
 admin.site.register(UploadRequest)
 admin.site.register(Vote)
+admin.site.register(EncryptionKey)
