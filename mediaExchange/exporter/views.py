@@ -51,17 +51,26 @@ def exporterexport(request):
             except Season.DoesNotExist, e:
                 print "ERROR: item that is neither Movie nor Season"
     jsonStruct = {}
-    moviesStruct = []
-    for movie in movies:
-        downloadFiles = DownloadFile.objects.filter(item=movie)
+    jsonStruct['movies'] = _jsonStructFromItemList(movies)
+    jsonStruct['series'] = _jsonStructFromItemList(seasons)
+    jsonStruct['keys'] = _jsonStructKeys()
+    jsonString = simplejson.dumps(jsonStruct)
+    return HttpResponse(jsonString, "application/json")
+
+def _jsonStructFromItemList(items):
+    itemStruct = []
+    for item in items:
+        downloadFiles = DownloadFile.objects.filter(item=item)
         if downloadFiles:
-            movieDict = movie.toDict()
-            movieDict['downloadFiles'] = []
+            itemDict = item.toDict()
+            itemDict['downloadFiles'] = []
             for downloadFile in downloadFiles:
-                movieDict['downloadFiles'].append({'downloadLink' : downloadFile.downloadLink,
+                itemDict['downloadFiles'].append({'downloadLink' : downloadFile.downloadLink,
                                                    'key'          : downloadFile.key.id})
-            moviesStruct.append(movieDict)
-    jsonStruct['movies'] = moviesStruct
+            itemStruct.append(itemDict)
+    return itemStruct
+
+def _jsonStructFromSeasonList(seasons):
     seasonsStruct = []
     for season in seasons:
         downloadFiles = DownloadFile.objects.filter(item=season)
@@ -72,11 +81,20 @@ def exporterexport(request):
                 seasonDict['downloadFiles'].append({'downloadLink' : downloadFile.downloadLink,
                                                     'key'          : downloadFile.key.id})
             seasonsStruct.append(seasonDict)
-    jsonStruct['series'] = seasonsStruct
+
+def _jsonStructKeys():
     keysStruct = {}
     for key in EncryptionKey.objects.all():
         keysStruct[key.id] = {'chunkSize' : key.chunkSize,
                               'key'       : key.key}
-    jsonStruct['keys'] = keysStruct
+    return keysStruct
+
+
+@login_required
+def exporterexportall(request):
+    jsonStruct = {}
+    jsonStruct['movies'] = _jsonStructFromItemList(Movie.objects.all())
+    jsonStruct['series'] = _jsonStructFromItemList(Season.objects.all())
+    jsonStruct['keys'] = _jsonStructKeys()
     jsonString = simplejson.dumps(jsonStruct)
     return HttpResponse(jsonString, "application/json")
