@@ -2,7 +2,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 
-from mediaExchange.movies.models import Item, Movie, UploadRequest, DownloadFile, EncryptionKey
+from mediaExchange.movies.models import Item, Movie, UploadRequest, EncryptionKey
 from mediaExchange.movies.views import moviesdetails
 from mediaExchange.series.models import Season
 from mediaExchange.series.views import seriesseasondetails
