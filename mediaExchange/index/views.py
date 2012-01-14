@@ -1,7 +1,7 @@
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
 
-from mediaExchange.movies.models import Movie, UploadRequest, DownloadFile
+from mediaExchange.movies.models import Movie, UploadRequest
 from mediaExchange.series.models import Season
 
 @login_required
