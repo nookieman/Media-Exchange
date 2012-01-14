@@ -3,13 +3,13 @@ import simplejson
 import tarfile
 
 from django.shortcuts import render_to_response, get_object_or_404
-from django.http import HttpResponse, HttpResponseServerError 
+from django.http import HttpResponse, HttpResponseServerError
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from mediaExchange.settings import MOVIE_SAVE_DIRECTORY
-from mediaExchange.movies.models import Movie, Language, MovieGenre, MovieSource, UploadRequest, EncryptionKey, DownloadFile
+from mediaExchange.movies.models import Movie, Language, MovieGenre, MovieSource, UploadRequest, EncryptionKey, DownloadFile, DownloadFileGroup
 from mediaExchange.series.models import Serie, Season, SerieGenre, SerieSource
 from mediaExchange.mediaUpload.forms import UploadForm, MovieUploadForm, SeriesUploadForm
 from mediaExchange.mediaUpload.handlers import ProgressUploadHandler
@@ -134,15 +134,18 @@ def handleMovie(request):
                     form = None
                     error = 'Thank you for contributing.'
                 elif (form.cleaned_data['dlLinks'] or form.cleaned_data['dlLinksFile']) and form.cleaned_data['keyfile']:
-                    key = EncryptionKey.fromFileHandle(form.cleaned_data['keyfile'])
                     dlUrls = []
                     if form.cleaned_data['dlLinks']:
                         dlUrls = [ url.strip() for url in form.cleaned_data['dlLinks'].split(',')]
                     else:
                         dlUrls = [ url.strip() for url in form.cleaned_data['dlLinksFile'] ]
-                    for url in dlUrls:
-                        df = DownloadFile(item=m, downloadLink=url, key=key)
-                        df.save()
+                    if len(dlUrls) > 0:
+                        key = EncryptionKey.fromFileHandle(form.cleaned_data['keyfile'])
+                        downloadFileGroup = DownloadFileGroup(item=m, key=key)
+                        downloadFileGroup.save()
+                        for url in dlUrls:
+                            df = DownloadFile(downloadFileGroup=downloadFileGroup, downloadLink=url)
+                            df.save()
                     form = None
                     error = 'Thank you for contributing.'
                 else:
@@ -233,15 +236,18 @@ def handleSerie(request):
                     form = None
                     error = 'Thank you for contributing.'
                 elif (form.cleaned_data['dlLinks'] or form.cleaned_data['dlLinksFile']) and form.cleaned_data['keyfile']:
-                    key = EncryptionKey.fromFileHandle(form.cleaned_data['keyfile'])
                     dlUrls = []
                     if form.cleaned_data['dlLinks']:
                         dlUrls = [ url.strip() for url in form.cleaned_data['dlLinks'].split(',')]
                     else:
                         dlUrls = [ url.strip() for url in form.cleaned_data['dlLinksFile'] ]
-                    for url in dlUrls:
-                        df = DownloadFile(item=season, downloadLink=url, key=key)
-                        df.save()
+                    if len(dlUrls) > 0:
+                        key = EncryptionKey.fromFileHandle(form.cleaned_data['keyfile'])
+                        downloadFileGroup = DownloadFileGroup(item=season, key=key)
+                        downloadFileGroup.save()
+                        for url in dlUrls:
+                            df = DownloadFile(downloadFileGroup=downloadFileGroup, downloadLink=url)
+                            df.save()
                     form = None
                     error = 'Thank you for contributing.'
                 else:

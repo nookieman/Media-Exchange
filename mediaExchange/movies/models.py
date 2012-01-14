@@ -23,14 +23,22 @@ class EncryptionKey(models.Model):
             key.save()
         return key
 
-
-class DownloadFile(models.Model):
+class DownloadFileGroup(models.Model):
     item = models.ForeignKey('Item')
-    downloadLink = models.URLField(max_length=1024, blank=True, null=True)
     key = models.ForeignKey('EncryptionKey', blank=False, null=False)
 
+    def getDownloadFiles(self):
+        return DownloadFile.objects.filter(downloadFileGroup=self.id)
+
     def __unicode__(self):
-        return "<DownloadFile %s (%s)" % (str(self.item), str(self.downloadLink))
+        return "<DownloadFileGroup %s>" % str(self.item)
+
+class DownloadFile(models.Model):
+    downloadFileGroup = models.ForeignKey('DownloadFileGroup')
+    downloadLink = models.URLField(max_length=1024, blank=True, null=True)
+
+    def __unicode__(self):
+        return "<DownloadFile %s (%s)" % (str(self.downloadFileGroup.item), str(self.downloadLink))
 
 class Item(models.Model):
     creator = models.ForeignKey(User, blank=True, null=True)
@@ -41,7 +49,7 @@ class Item(models.Model):
     mtime = models.IntegerField(blank=True, null=True)
 
     def __unicode__(self):
-        return self.name
+        return "<Item %s by %s>" % (self.name, str(self.creator))
 
 class Language(models.Model):
     name = models.CharField(max_length=256, blank=True, null=True)

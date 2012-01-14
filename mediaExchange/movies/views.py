@@ -6,7 +6,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 
-from mediaExchange.movies.models import Movie, UploadRequest, DownloadFile, ItemRequest, Vote
+from mediaExchange.movies.models import Movie, UploadRequest, DownloadFileGroup, ItemRequest, Vote
 
 @login_required
 def moviesindex(request):
@@ -34,7 +34,7 @@ def moviesdetails(request, movie_id):
 def moviescreate(request, movie_id):
     print 'create called'
     movie = get_object_or_404(Movie, pk=movie_id)
-    if not DownloadFile.objects.filter(item=movie):
+    if not DownloadFileGroup.objects.filter(item=movie):
         ur = UploadRequest.objects.filter(item=movie)
         if not ur:
             ur = UploadRequest(item=movie, user=request.user)
@@ -55,7 +55,7 @@ def getDetails(request, movie, message=None):
         elif size > 1024:
             s = (round(size/1024.0, 2), 'KB')
         sizeString = "%.2f %s" % s
-    downloadFiles = DownloadFile.objects.filter(item=movie)
+    downloadFileGroups = DownloadFileGroup.objects.filter(item=movie)
     ur = UploadRequest.objects.filter(item=movie)
     if ur:
         ur = ur[0]
@@ -64,15 +64,15 @@ def getDetails(request, movie, message=None):
     urs = UploadRequest.objects.filter(done=False).order_by('id')
     pathAvailable = movie.path != None and os.path.exists(movie.path)
     c.update(csrf(request))
-    c.update({'movie'          : movie,
-              'size'           : sizeString,
-              'downloadFiles'  : downloadFiles,
-              'uploadRequest'  : ur,
-              'wvotes'         : wvotes,
-              'nvotes'         : nvotes,
-              'uploadRequests' : urs,
-              'pathAvailable'  : pathAvailable,
-              'message'        : message})
+    c.update({'movie'              : movie,
+              'size'               : sizeString,
+              'downloadFileGroups' : downloadFileGroups,
+              'uploadRequest'      : ur,
+              'wvotes'             : wvotes,
+              'nvotes'             : nvotes,
+              'uploadRequests'     : urs,
+              'pathAvailable'      : pathAvailable,
+              'message'            : message})
     return render_to_response('movies/details.html', c)
 
 @login_required

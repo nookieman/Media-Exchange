@@ -3,7 +3,7 @@
 from MultiUpload import MultiUpload
 from uploader import *
 
-from mediaExchange.movies.models import UploadRequest, DownloadFile, EncryptionKey
+from mediaExchange.movies.models import UploadRequest, DownloadFile, DownloadFileGroup, EncryptionKey
 
 from mediaExchange.settings import ENCRYPTION_KEY, ENCRYPTION_CHUNK_SIZE
 
@@ -33,7 +33,7 @@ def main():
             ur.save()
             print 'processing', ur
             pack(ur)
-            if DownloadFile.objects.filter(item=ur.item):
+            if DownloadFileGroup.objects.filter(item=ur.item):
                 ur.done = True
                 ur.save()
         else:
@@ -78,8 +78,7 @@ def pack(uploadRequest):
         uploadRequest.save()
 
         linkList = uploadFiles(uploadRequest=uploadRequest, fileHoster=mu, files=encfiles)
-        for link in linkList:
-            storeLink(link, uploadRequest.item, chunkSize, keyData)
+        storeLinks(link, uploadRequest.item, chunkSize, keyData)
     except KeyboardInterrupt, e:
         uploadRequest.state=STATE_QUEUED
         uploadRequest.save()
@@ -110,10 +109,16 @@ def pack(uploadRequest):
                 deletefiles += encfiles
     cleanup(deletefiles)
 
-def storeLink(link, item, chunkSize, key):
-    key = EncryptionKey.getOrCreate(chunkSize, key)
-    df = DownloadFile(item=item, downloadLink=link, key=key)
-    df.save()
+def storeLink(link, item, chunkSize, keyData):
+    if len(linkList) > 0:
+        key = EncryptionKey.getOrCreate(chunkSize=chunkSize, key=keyData)
+        key.save()
+        downloadFileGroup = DownloadFileGroup(item=item, key=key)
+        downloadFileGroup.save()
+        for link in linkList:
+            df = DownloadFile(downloadFileGroup=downloadFileGroup,
+                              downloadLink=link)
+            df.save()
 
 
 if __name__ == '__main__':

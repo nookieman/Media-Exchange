@@ -39,11 +39,14 @@
 {% endif %}
 
 <div>Download:
-{% for df in downloadFiles %}
-    <br/>
-    <a target="_blank" href="{{ df.downloadLink }}">{{ df.downloadLink|escape }}</a>
-     - 
-    <a target="_blank" href="/items/key/{{df.key.id}}/">keyfile</a>
+{% for dfg in downloadFileGroups %}
+    <div id="LinkGroup" style="border-style:dashed; border-width:1px; padding:5px">
+        <a target="_blank" href="/items/key/{{ dfg.key.id }}/">keyfile</a>
+    {% for df in dfg.getDownloadFiles %}
+        <br/>
+        <a target="_blank" href="{{ df.downloadLink|urlencode }}">{{ df.downloadLink|escape }}</a>
+    {% endfor %}
+    </div>
 {% endfor %}
 
 {% if not uploadRequest.done %}
@@ -67,7 +70,7 @@ uploading ({{ uploadRequest.uploaded  }}%)
         </span>.
 
     {% else %}
-        {% if not downloadFiles %}
+        {% if not downloadFileGroups %}
             {% if season.present %}
                 {% if pathAvailable %}
 <a href="/series/create/{{ season.id }}/">Create Download</a>

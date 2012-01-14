@@ -4,7 +4,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 
-from mediaExchange.movies.models import Movie, UploadRequest, DownloadFile, ItemRequest
+from mediaExchange.movies.models import Movie, UploadRequest, DownloadFileGroup, ItemRequest
 from mediaExchange.movies.views import sendMail
 from mediaExchange.series.models import Serie, Season
 
@@ -29,7 +29,7 @@ def seriesseasondetails(request, season_id):
 def seriesseasoncreate(request, season_id):
     print 'create called'
     season = get_object_or_404(Season, pk=season_id)
-    if not DownloadFile.objects.filter(item=season):
+    if not DownloadFileGroup.objects.filter(item=season):
         ur = UploadRequest.objects.filter(item=season)
         if not ur:
             ur = UploadRequest(item=season, user=request.user)
@@ -55,20 +55,20 @@ def getSeasonDetails(request, season, message=None):
         elif size > 1024:
             s = (round(size/1024.0, 2), 'KB')
         sizeString = "%.2f %s" % s
-    downloadFiles = DownloadFile.objects.filter(item=season)
+    downloadFileGroups = DownloadFileGroup.objects.filter(item=season)
     ur = UploadRequest.objects.filter(item=season)
     if ur:
         ur = ur[0]
     urs = UploadRequest.objects.filter(done=False).order_by('id')
     pathAvailable = season.path != None and os.path.exists(season.path)
-    c.update({'serie'          : season.serie,
-              'season'         : season,
-              'size'           : sizeString,
-              'downloadFiles'  : downloadFiles,
-              'uploadRequest'  : ur,
-              'uploadRequests' : urs,
-              'pathAvailable'  : pathAvailable,
-              'message'        : message})
+    c.update({'serie'              : season.serie,
+              'season'             : season,
+              'size'               : sizeString,
+              'downloadFileGroups' : downloadFileGroups,
+              'uploadRequest'      : ur,
+              'uploadRequests'     : urs,
+              'pathAvailable'      : pathAvailable,
+              'message'            : message})
     c.update(csrf(request))
     return render_to_response('series/seasondetails.html', c)
 

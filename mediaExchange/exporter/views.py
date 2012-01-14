@@ -32,7 +32,7 @@ def exporterexport(request):
                         'language' : ...,
                         'genre'  : ...,
                         'source' : ...,
-                        'downloadFiles' : [{'downloadLink': ..., 'key': ...}, ...],
+                        'downloadFileGroups' : [{'downloadLinks': [...], 'key': ...}, ...],
                      }, ...]
     }
     """
@@ -46,13 +46,17 @@ def exporterexport(request):
 def _jsonStructFromItemList(items):
     itemStruct = []
     for item in items:
-        downloadFiles = DownloadFile.objects.filter(item=item)
-        if downloadFiles:
+        downloadFileGroups = DownloadFileGroup.objects.filter(item=item)
+        if downloadFileGroups:
             itemDict = item.toDict()
-            itemDict['downloadFiles'] = []
-            for downloadFile in downloadFiles:
-                itemDict['downloadFiles'].append({'downloadLink' : downloadFile.downloadLink,
-                                                   'key'          : downloadFile.key.id})
+            itemDict['downloadFileGroups'] = []
+            for downloadFileGroup in downloadFileGroups:
+                downloadFiles = DownloadFile.objects.filter(downloadFileGroup=downloadFileGroup)
+                downloadLinks = []
+                for downloadFile in downloadFiles:
+                    downloadLinks.append(downloadFile.downloadLink)
+                itemDict['downloadFiles'].append({'downloadLinks' : downloadLinks,
+                                                  'key'           : downloadFile.key.id})
             itemStruct.append(itemDict)
     return itemStruct
 
