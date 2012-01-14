@@ -5,12 +5,11 @@ import urllib2
 
 from FileHoster import FileHoster
 
-from mediaExchange.movies.models import DownloadFile
 from mediaExchange.poster.encode import multipart_encode
 from mediaExchange.poster.streaminghttp import register_openers
 
 class MultiUpload(FileHoster):
-        
+
     MAX_FILESIZE = 500000000 # in bytes
 
     PREURL = "http://multiupload.com/"
@@ -19,7 +18,7 @@ class MultiUpload(FileHoster):
     UPLOADIDENTIFIER_REGEX = re.compile("multiupload\.com\/upload\/\?UPLOAD\_IDENTIFIER\=([^\"]+)\"", re.I | re.S | re.M)
     USERCOOKIE_REGEX = re.compile("name\=\"u\" value\=\"([^\"]+)\"", re.I | re.S | re.M)
     UPLOADURL_REGEX = re.compile("enctype=\"multipart\/form-data\" action=\"([^\"]+)\" method=\"POST\"", re.I | re.S | re.M)
-    
+
     def getNeededValues(self):
         uploadURL = None
         uploadIdentifier = None
