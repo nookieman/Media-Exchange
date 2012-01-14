@@ -36,23 +36,9 @@ def exporterexport(request):
                      }, ...]
     }
     """
-    movies = []
-    seasons = []
-    uploadRequests = UploadRequest.objects.filter(done=True)
-    for uploadRequest in uploadRequests:
-        id = uploadRequest.item.id
-        try:
-            movie = Movie.objects.get(id=id)
-            movies.append(movie)
-        except Movie.DoesNotExist, e:
-            try:
-                season = Season.objects.get(id=id)
-                seasons.append(season)
-            except Season.DoesNotExist, e:
-                print "ERROR: item that is neither Movie nor Season"
     jsonStruct = {}
-    jsonStruct['movies'] = _jsonStructFromItemList(movies)
-    jsonStruct['series'] = _jsonStructFromItemList(seasons)
+    jsonStruct['movies'] = _jsonStructFromItemList(Movie.objects.all())
+    jsonStruct['series'] = _jsonStructFromItemList(Season.objects.all())
     jsonStruct['keys'] = _jsonStructKeys()
     jsonString = simplejson.dumps(jsonStruct)
     return HttpResponse(jsonString, "application/json")
@@ -89,12 +75,3 @@ def _jsonStructKeys():
                               'key'       : key.key}
     return keysStruct
 
-
-@login_required
-def exporterexportall(request):
-    jsonStruct = {}
-    jsonStruct['movies'] = _jsonStructFromItemList(Movie.objects.all())
-    jsonStruct['series'] = _jsonStructFromItemList(Season.objects.all())
-    jsonStruct['keys'] = _jsonStructKeys()
-    jsonString = simplejson.dumps(jsonStruct)
-    return HttpResponse(jsonString, "application/json")
