@@ -283,7 +283,7 @@ def seasonExists(serie, form):
         if form.cleaned_data['number'] == season.number:
             if form.cleaned_data['subname'] == season.subname or (not form.cleaned_data['subname'] and not season.subname):
                 if form.cleaned_data['source'] == season.source or (not form.cleaned_data['source'] and not season.source):
-                    if form.cleaned_data['language'] == rm.language or (not form.cleaned_data['language'] and not rm.language):
+                    if form.cleaned_data['language'] == season.language or (not form.cleaned_data['language'] and not season.language):
                         result = True
                         break
     return result
