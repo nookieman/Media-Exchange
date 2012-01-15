@@ -14,6 +14,7 @@ from mediaExchange.series.models import Serie, Season, SerieGenre, SerieSource
 from mediaExchange.mediaUpload.forms import UploadForm, MovieUploadForm, SeriesUploadForm
 from mediaExchange.mediaUpload.handlers import ProgressUploadHandler
 
+@login_required
 def mediaUploadindex(request):
     return render_to_response('mediaUpload/index.html', {})
 
@@ -305,7 +306,7 @@ def generateDestinationPath(form):
     os.makedirs(result, 0777)
     return result
 
-
+@login_required
 def upload_progress(request):
     """
     Return JSON object with information about the progress of an upload.
