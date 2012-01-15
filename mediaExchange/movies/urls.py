@@ -5,5 +5,6 @@ urlpatterns = patterns('mediaExchange.movies.views',
     (r'^details/(?P<movie_id>\d+)/?$', 'moviesdetails'),
     (r'^create/(?P<movie_id>\d+)/?$', 'moviescreate'),
     (r'^request/(?P<movie_id>\d+)/?$', 'moviesrequest'),
+    (r'^addlinks/(?P<movie_id>\d+)/?$', 'moviesaddlinks'),
 )
 

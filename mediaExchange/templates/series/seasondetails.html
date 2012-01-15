@@ -40,13 +40,16 @@
 
 <div>Download:
 {% for dfg in downloadFileGroups %}
-    <div id="LinkGroup" style="border-style:dashed; border-width:1px; padding:5px">
+<div id="LinkGroup">
+    <fieldset>
+        <legend>Download Links:</legend>
         <a target="_blank" href="/items/key/{{ dfg.key.id }}/">keyfile</a>
     {% for df in dfg.getDownloadFiles %}
         <br/>
         <a target="_blank" href="{{ df.downloadLink|urlencode }}">{{ df.downloadLink|escape }}</a>
     {% endfor %}
-    </div>
+    </fieldset>
+</div>
 {% endfor %}
 
 {% if not uploadRequest.done %}
@@ -88,7 +91,12 @@ Sorry, the files are not locally available and therefore no download links can b
 {% endif %}
 
 {% if message %}
-<div><b>Message: {{ message|escape }}</b></div>
+    <div>
+        <fieldset>
+            <legend>Message:</legend>
+            {{ message|escape }}
+        </fieldset>
+    </div>
 {% endif %}
 
 {% if season.directoryListing %}
@@ -100,5 +108,17 @@ Sorry, the files are not locally available and therefore no download links can b
 </div>
 <hr />
 {% endif %}
+
+<div>
+    <form action="/series/addlinks/{{ season.id }}/" enctype="multipart/form-data" method="POST">{% csrf_token %}
+        <fieldset>
+            <legend>Add download links:</legend>
+            <table>
+                {{ addItemForm }}
+                <tr><td><input type="submit" /></td></tr>
+            </table>
+        </fieldset>
+    </form>
+</div>
 
 {% endblock %}

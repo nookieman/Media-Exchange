@@ -2,11 +2,13 @@ import os.path
 import smtplib
 from email.mime.text import MIMEText
 
-from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
+from django.shortcuts import render_to_response, get_object_or_404
+from django.views.decorators.csrf import csrf_protect
 
-from mediaExchange.movies.models import Movie, UploadRequest, DownloadFileGroup, ItemRequest, Vote
+from mediaExchange.movies.forms import AddItemUploadForm
+from mediaExchange.movies.models import DownloadFile, DownloadFileGroup, EncryptionKey, ItemRequest, Movie, UploadRequest, Vote
 
 @login_required
 def moviesindex(request):
@@ -30,6 +32,7 @@ def moviesdetails(request, movie_id):
             v.save()
     return getDetails(request, movie)
 
+@csrf_protect
 @login_required
 def moviescreate(request, movie_id):
     print 'create called'
@@ -63,6 +66,7 @@ def getDetails(request, movie, message=None):
     nvotes = Vote.objects.filter(movie=movie, watchable=False)
     urs = UploadRequest.objects.filter(done=False).order_by('id')
     pathAvailable = movie.path != None and os.path.exists(movie.path)
+    form = AddItemUploadForm()
     c.update(csrf(request))
     c.update({'movie'              : movie,
               'size'               : sizeString,
@@ -72,8 +76,42 @@ def getDetails(request, movie, message=None):
               'nvotes'             : nvotes,
               'uploadRequests'     : urs,
               'pathAvailable'      : pathAvailable,
-              'message'            : message})
+              'message'            : message,
+              'addItemForm'        : form})
     return render_to_response('movies/details.html', c)
+
+@login_required
+@csrf_protect
+def moviesaddlinks(request, movie_id):
+    c = {}
+    movie = get_object_or_404(Movie, pk=movie_id)
+    form = AddItemUploadForm(request.POST, request.FILES)
+    msg = addLinks(item=movie, form=form)
+    return getDetails(request, movie, msg)
+
+def addLinks(item, form):
+    msg = "Unable to add new links: Invalid form data."
+    if form.is_valid():
+        if form.cleaned_data['dlLinks'] or form.cleaned_data['dlLinksFile']:
+            dlUrls = []
+            if form.cleaned_data['dlLinks']:
+                dlUrls = [ url.strip() for url in form.cleaned_data['dlLinks'].split(',')]
+            else:
+                dlUrls = [ url.strip() for url in form.cleaned_data['dlLinksFile'] ]
+            if len(dlUrls) > 0:
+                key = EncryptionKey.fromFileHandle(form.cleaned_data['keyfile'])
+                downloadFileGroup = DownloadFileGroup(item=item, key=key)
+                downloadFileGroup.save()
+                for url in dlUrls:
+                    df = DownloadFile(downloadFileGroup=downloadFileGroup, downloadLink=url)
+                    df.save()
+                msg = "Thanks for uploading new links."
+            else:
+                msg = "Unable to add new links: No download links found."
+        else:
+            msg = "Unable to add new links: Neither download links nor download links file given."
+    return msg
+
 
 @login_required
 def moviesrequest(request, movie_id):

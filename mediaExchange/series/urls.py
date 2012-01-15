@@ -6,4 +6,5 @@ urlpatterns = patterns('mediaExchange.series.views',
     (r'^season/(?P<season_id>\d+)/?$', 'seriesseasondetails'),
     (r'^create/(?P<season_id>\d+)/?$', 'seriesseasoncreate'),
     (r'^request/(?P<season_id>\d+)/?$', 'seriesseasonrequest'),
+    (r'^addlinks/(?P<season_id>\d+)/?$', 'seriesseasonaddlinks'),
 )

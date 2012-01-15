@@ -1,11 +1,13 @@
 import os.path
 
-from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
+from django.shortcuts import render_to_response, get_object_or_404
+from django.views.decorators.csrf import csrf_protect
 
-from mediaExchange.movies.models import Movie, UploadRequest, DownloadFileGroup, ItemRequest
-from mediaExchange.movies.views import sendMail
+from mediaExchange.movies.forms import AddItemUploadForm
+from mediaExchange.movies.models import UploadRequest, DownloadFileGroup, ItemRequest
+from mediaExchange.movies.views import addLinks, sendMail
 from mediaExchange.series.models import Serie, Season
 
 
@@ -61,6 +63,7 @@ def getSeasonDetails(request, season, message=None):
         ur = ur[0]
     urs = UploadRequest.objects.filter(done=False).order_by('id')
     pathAvailable = season.path != None and os.path.exists(season.path)
+    form = AddItemUploadForm()
     c.update({'serie'              : season.serie,
               'season'             : season,
               'size'               : sizeString,
@@ -68,7 +71,8 @@ def getSeasonDetails(request, season, message=None):
               'uploadRequest'      : ur,
               'uploadRequests'     : urs,
               'pathAvailable'      : pathAvailable,
-              'message'            : message})
+              'message'            : message,
+              'addItemForm'        : form})
     c.update(csrf(request))
     return render_to_response('series/seasondetails.html', c)
 
@@ -83,6 +87,15 @@ def seriesseasonrequest(request, season_id):
             msg = "The contributor received a message of your request."
     else:
         msg = "Sorry the contributor of this item is unknown."
+    return getSeasonDetails(request, season, msg)
+
+@login_required
+@csrf_protect
+def seriesseasonaddlinks(request, season_id):
+    c = {}
+    season = get_object_or_404(Season, pk=season_id)
+    form = AddItemUploadForm(request.POST, request.FILES)
+    msg = addLinks(item=season, form=form)
     return getSeasonDetails(request, season, msg)
 
 def sendSeasonRequestMail(season, requester):
