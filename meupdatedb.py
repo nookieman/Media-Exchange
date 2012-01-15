@@ -86,8 +86,8 @@ def addSeries(directory):
                             directoryListing = ""
                             dirlist = os.listdir(seasonPath)
                             dirlist.sort()
-                            for directory in dirlist:
-                                directoryListing += "%s\n" % directory
+                            for d in dirlist:
+                                directoryListing += "%s\n" % d
                             directoryListing = directoryListing[:-1]
                             try:
                                 season = Season.objects.get(serie=serie, number=seasonNumber, subname=ssubname, year=syear, language=slanguage, source=ssource)
