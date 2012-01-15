@@ -78,7 +78,7 @@ def pack(uploadRequest):
         uploadRequest.save()
 
         linkList = uploadFiles(uploadRequest=uploadRequest, fileHoster=mu, files=encfiles)
-        storeLinks(link, uploadRequest.item, chunkSize, keyData)
+        storeLinks(linkList, uploadRequest.item, chunkSize, keyData)
     except KeyboardInterrupt, e:
         uploadRequest.state=STATE_QUEUED
         uploadRequest.save()
@@ -109,9 +109,9 @@ def pack(uploadRequest):
                 deletefiles += encfiles
     cleanup(deletefiles)
 
-def storeLink(link, item, chunkSize, keyData):
+def storeLinks(linkList, item, chunkSize, keyData):
     if len(linkList) > 0:
-        key = EncryptionKey.getOrCreate(chunkSize=chunkSize, key=keyData)
+        key = EncryptionKey.getOrCreate(chunkSize=chunkSize, keydata=keyData)
         key.save()
         downloadFileGroup = DownloadFileGroup(item=item, key=key)
         downloadFileGroup.save()
