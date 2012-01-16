@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 
-from mediaExchange.movies.models import Movie, UploadRequest, DownloadFileGroup, EncryptionKey
+from mediaExchange.movies.models import Movie, UploadRequest, DownloadFileGroup, DownloadFile, EncryptionKey
 from mediaExchange.series.models import Season
 
 @login_required
@@ -55,8 +55,8 @@ def _jsonStructFromItemList(items):
                 downloadLinks = []
                 for downloadFile in downloadFiles:
                     downloadLinks.append(downloadFile.downloadLink)
-                itemDict['downloadFiles'].append({'downloadLinks' : downloadLinks,
-                                                  'key'           : downloadFile.key.id})
+                itemDict['downloadFileGroups'].append({'downloadLinks' : downloadLinks,
+                                                  'key'           : downloadFileGroup.key.id})
             itemStruct.append(itemDict)
     return itemStruct
 
