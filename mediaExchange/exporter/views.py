@@ -37,18 +37,29 @@ def exporterexport(request):
     }
     """
     jsonStruct = {}
-    jsonStruct['movies'] = _jsonStructFromItemList(Movie.objects.all())
-    jsonStruct['series'] = _jsonStructFromItemList(Season.objects.all())
+    jsonStruct['movies'] = _jsonStructFromItemList(items=Movie.objects.all(),
+                                                   onlyDownloadable=True)
+    jsonStruct['series'] = _jsonStructFromItemList(items=Season.objects.all(),
+                                                   onlyDownloadable=True)
     jsonStruct['keys'] = _jsonStructKeys()
     jsonString = simplejson.dumps(jsonStruct)
     return HttpResponse(jsonString, "application/json")
 
-def _jsonStructFromItemList(items):
+@login_required
+def exporterexportall(request):
+    jsonStruct = {}
+    jsonStruct['movies'] = _jsonStructFromItemList(items=Movie.objects.all())
+    jsonStruct['series'] = _jsonStructFromItemList(items=Season.objects.all())
+    jsonStruct['keys'] = _jsonStructKeys()
+    jsonString = simplejson.dumps(jsonStruct)
+    return HttpResponse(jsonString, "application/json")
+
+def _jsonStructFromItemList(items, onlyDownloadable=False):
     itemStruct = []
     for item in items:
+        itemDict = item.toDict()
         downloadFileGroups = DownloadFileGroup.objects.filter(item=item)
         if downloadFileGroups:
-            itemDict = item.toDict()
             itemDict['downloadFileGroups'] = []
             for downloadFileGroup in downloadFileGroups:
                 downloadFiles = DownloadFile.objects.filter(downloadFileGroup=downloadFileGroup)
@@ -56,8 +67,8 @@ def _jsonStructFromItemList(items):
                 for downloadFile in downloadFiles:
                     downloadLinks.append(downloadFile.downloadLink)
                 itemDict['downloadFileGroups'].append({'downloadLinks' : downloadLinks,
-                                                  'key'           : downloadFileGroup.key.id})
-            itemStruct.append(itemDict)
+                                                       'key'           : downloadFileGroup.key.id})
+        itemStruct.append(itemDict)
     return itemStruct
 
 def _jsonStructKeys():
