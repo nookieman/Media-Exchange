@@ -6,8 +6,8 @@ import re
 import sys
 from ConfigParser import SafeConfigParser
 
-from mediaExchange.movies.models import Movie, MovieSource, Language
-from mediaExchange.series.models import Serie, Season, SerieSource
+from mediaExchange.movies.models import Movie, Source, Language
+from mediaExchange.series.models import Serie, Season
 
 def addMovies(directory):
     #TODO check if still working with named groups
@@ -22,13 +22,7 @@ def addMovies(directory):
                 (mname, msubname, myear, msource) = inforegex.match(dirname).groups()
                 mmtime = int(os.stat(mpath).st_mtime)
                 if msource:
-                    # if the source of the movie does not exist create it
-                    src = MovieSource.objects.filter(name=msource)
-                    if src:
-                        msource = src[0]
-                    else:
-                        msource = MovieSource(name=msource)
-                        msource.save()
+                    src = Source.getOrCreate(msource)
                 rm = Movie.objects.filter(name=mname, subname=msubname, year=myear)
                 if rm:
                     rm = rm[0]
@@ -70,19 +64,9 @@ def addSeries(directory):
                                 serie.save()
                             smtime = int(os.stat(seasonPath).st_mtime)
                             if ssource:
-                                # if the source of the Series does not exist create it
-                                try:
-                                    ssource = SerieSource.objects.get(name=ssource)
-                                except SerieSource.DoesNotExist, e:
-                                    ssource = SerieSource(name=ssource)
-                                    ssource.save()
+                                ssource = Source.getOrCreate(ssource)
                             if slanguage:
-                                # if the language of the Series does not exist create it
-                                try:
-                                    slanguage = Language.objects.get(name=ssource)
-                                except Language.DoesNotExist, e:
-                                    slanguage = Language(name=ssource)
-                                    slanguage.save()
+                                slanguage = Language.getOrCreate(ssource)
                             directoryListing = ""
                             dirlist = os.listdir(seasonPath)
                             dirlist.sort()
