@@ -57,24 +57,55 @@ class Language(models.Model):
     def __unicode__(self):
         return self.name
 
-class MovieGenre(models.Model):
+    @staticmethod
+    def getOrCreate(name):
+        lang = Language.objects.filter(name=name)
+        if len(lang) > 0:
+            lang = lang[0]
+        else:
+            lang = Language(name)
+            lang.save()
+        return lang
+
+class Genre(models.Model):
     name = models.CharField(max_length=256, blank=True, null=True)
 
     def __unicode__(self):
         return self.name
 
-class MovieSource(models.Model):
+    @staticmethod
+    def getOrCreate(name):
+        genre = Genre.objects.filter(name=name)
+        if len(genre) > 0:
+            genre = genre[0]
+        else:
+            genre = Genre(name)
+            genre.save()
+        return genre
+
+class Source(models.Model):
     name = models.CharField(max_length=256, blank=True, null=True)
 
     def __unicode__(self):
         return self.name
+
+    @staticmethod
+    def getOrCreate(name):
+        source = Source.objects.filter(name=name)
+        if len(source) > 0:
+            source = source[0]
+        else:
+            source = Source(name)
+            source.save()
+        return source
+    return self.name
 
 class Movie(Item):
     subname = models.CharField(max_length=256, blank=True, null=True)
     language = models.ForeignKey('Language', blank=True, null=True)
     year = models.IntegerField(blank=True, null=True)
-    genre = models.ForeignKey('MovieGenre', blank=True, null=True)
-    source = models.ForeignKey('MovieSource', blank=True, null=True)
+    genre = models.ForeignKey('Genre', blank=True, null=True)
+    source = models.ForeignKey('Source', blank=True, null=True)
 
     def __unicode__(self):
         return self.name
