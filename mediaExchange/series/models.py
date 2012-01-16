@@ -3,17 +3,17 @@ from django.db.models import get_model
 
 from mediaExchange.movies.models import Item, Language
 
-class SerieGenre(models.Model): 
-    name = models.CharField(max_length=256, blank=True, null=True) 
- 
-    def __unicode__(self): 
-        return self.name 
- 
-class SerieSource(models.Model): 
-    name = models.CharField(max_length=256, blank=True, null=True) 
- 
-    def __unicode__(self): 
-        return self.name 
+class SerieGenre(models.Model):
+    name = models.CharField(max_length=256, blank=True, null=True)
+
+    def __unicode__(self):
+        return self.name
+
+class SerieSource(models.Model):
+    name = models.CharField(max_length=256, blank=True, null=True)
+
+    def __unicode__(self):
+        return self.name
 
 class Serie(models.Model):
     name = models.CharField(max_length=256)
