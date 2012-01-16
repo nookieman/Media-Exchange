@@ -9,8 +9,8 @@ from django.core.context_processors import csrf
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from mediaExchange.settings import MOVIE_SAVE_DIRECTORY
-from mediaExchange.movies.models import Movie, Language, MovieGenre, MovieSource, UploadRequest, EncryptionKey, DownloadFile, DownloadFileGroup
-from mediaExchange.series.models import Serie, Season, SerieGenre, SerieSource
+from mediaExchange.movies.models import Movie, Language, Genre, Source, UploadRequest, EncryptionKey, DownloadFile, DownloadFileGroup
+from mediaExchange.series.models import Serie, Season
 from mediaExchange.mediaUpload.forms import UploadForm, MovieUploadForm, SeriesUploadForm
 from mediaExchange.mediaUpload.handlers import ProgressUploadHandler
 
@@ -76,30 +76,15 @@ def handleMovie(request):
             try:
                 language = None
                 if form.cleaned_data['language']:
-                    language = Language.objects.filter(name=form.cleaned_data['language'])
-                    if language:
-                        language = language[0]
-                    else:
-                        language = Language(name=form.cleaned_data['language'])
-                        language.save()
+                    language = Language.getOrCreate(form.cleaned_data['language'])
 
                 genre = None
                 if form.cleaned_data['genre']:
-                    genre = MovieGenre.objects.filter(name=form.cleaned_data['genre'])
-                    if genre:
-                        genre = genre[0]
-                    else:
-                        genre = MovieGenre(name=form.cleaned_data['genre'])
-                        genre.save()
+                    genre = Genre.getOrCreate(form.cleaned_data['genre'])
 
                 source = None
                 if form.cleaned_data['source']:
-                    source = MovieSource.objects.filter(name=form.cleaned_data['source'])
-                    if source:
-                        source = source[0]
-                    else:
-                        source = MovieSource(name=form.cleaned_data['source'])
-                        source.save()
+                    source = Source.getOrCreate(form.cleaned_data['source'])
 
                 subname = None
                 if form.cleaned_data['subname']:
@@ -173,30 +158,15 @@ def handleSerie(request):
             try:
                 language = None
                 if form.cleaned_data['language']:
-                    language = Language.objects.filter(name=form.cleaned_data['language'])
-                    if language:
-                        language = language[0]
-                    else:
-                        language = Language(name=form.cleaned_data['language'])
-                        language.save()
+                    language = Language.getOrCreate(form.cleaned_data['language'])
 
                 genre = None
                 if form.cleaned_data['genre']:
-                    genre = SerieGenre.objects.filter(name=form.cleaned_data['genre'])
-                    if genre:
-                        genre = genre[0]
-                    else:
-                        genre = SerieGenre(name=form.cleaned_data['genre'])
-                        genre.save()
+                    genre = Genre.getOrCreate(form.cleaned_data['genre'])
 
                 source = None
                 if form.cleaned_data['source']:
-                    source = SerieSource.objects.filter(name=form.cleaned_data['source'])
-                    if source:
-                        source = source[0]
-                    else:
-                        source = SerieSource(name=form.cleaned_data['source'])
-                        source.save()
+                    source = Source.getOrCreate(form.cleaned_data['source'])
 
                 number = None
                 if form.cleaned_data['number']:
