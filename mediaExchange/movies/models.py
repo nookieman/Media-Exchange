@@ -98,7 +98,6 @@ class Source(models.Model):
             source = Source(name)
             source.save()
         return source
-    return self.name
 
 class Movie(Item):
     subname = models.CharField(max_length=256, blank=True, null=True)
