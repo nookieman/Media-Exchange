@@ -232,7 +232,7 @@ class Comment(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
-        return "<Comment from '%s' on '%s': '%s'>" % (self.user.name, str(self.item), self.subject)
+        return "<Comment from '%s' on '%s': '%s'>" % (self.user.username, str(self.item), self.subject)
 
 class Rating(models.Model):
     user = models.ForeignKey(User)
@@ -241,7 +241,7 @@ class Rating(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True, auto_now=True)
 
     def __unicode__(self):
-        return "<Rating from '%s' on '%s': '%d'>" % (self.user.name, str(self.item), self.rating)
+        return "<Rating from '%s' on '%s': '%d'>" % (self.user.username, str(self.item), self.rating)
 
     @staticmethod
     def updateOrCreate(user, item, rating):
