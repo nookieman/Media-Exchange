@@ -243,6 +243,16 @@ class Rating(models.Model):
     def __unicode__(self):
         return "<Rating from '%s' on '%s': '%d'>" % (self.user.name, str(self.item), self.rating)
 
+    @staticmethod
+    def updateOrCreate(user, item, rating):
+        rating = None
+        try:
+            rating = Rating.objects.get(item=item, user=user)
+            rating.rating = rating
+        except Rating.DoesNotExist:
+            rating = Rating(user=user, item=item, rating=rating)
+        rating.save()
+
 class Vote(models.Model):
     user = models.ForeignKey(User)
     movie = models.ForeignKey('Item')
