@@ -12,18 +12,20 @@ from mediaExchange.series.models import Serie, Season
 def addMovies(directory):
     #TODO check if still working with named groups
 #    inforegex = re.compile('^(?P<title>.*?)(?:\s+-\s+(?P<subtitle>.*?))?(?:\s+\((?P<year>\d{4})\))?(?:\s+\[(?P<source>[a-zA-Z0-9!"$%&/()=\\\\?_-]*)\])?$')
-    inforegex = re.compile('^(.*?)(?:\s+-\s+(.*?))?(?:\s+\((\d{4})\))?(?:\s+\[([a-zA-Z0-9!"$%&/()=\\\\?_-]*)\])?$')
+    inforegex = re.compile('^(?P<name>.*?)(?:\s+-\s+(?P<subname>.*?))?(?:\s+\((?P<year>\d{4})\))?(?:\s+\[(?P<source>[a-zA-Z0-9!"$%&/()=\\\\?_-]*)\])?$')
     if os.path.isdir(directory):
         for mdir in os.listdir(directory):
             dirname = os.path.basename(mdir)
             mpath = directory + '/' + dirname
             match = inforegex.match(dirname)
             if match:
-                (mname, msubname, myear, msource) = inforegex.match(dirname).groups()
+                movieDict = inforegex.match(dirname).groupdict()
                 mmtime = int(os.stat(mpath).st_mtime)
-                if msource:
-                    src = Source.getOrCreate(msource)
-                rm = Movie.objects.filter(name=mname, subname=msubname, year=myear)
+                msource = None
+                msource = Source.getOrCreate(movieDict.get('source', None))
+                rm = Movie.objects.filter(name=movieDict['name'],
+                                          subname=movieDict.get('subname', None),
+                                          year=movieDict.get('year', None))
                 if rm:
                     rm = rm[0]
                     if rm.mtime < mmtime:
@@ -33,8 +35,15 @@ def addMovies(directory):
                         rm.save()
                 else:
                     msize = getDirSize(mpath)
-                    print (mname, msubname, myear, msource, msize)
-                    m = Movie(name=mname, subname=msubname, path=mpath, year=myear, source=msource, mtime=mmtime, size=msize, present=True)
+                    print movieDict
+                    m = Movie(name=movieDict['name'],
+                              subname=movieDict.get('subname', None),
+                              year=movieDict.get('year', None),
+                              path=mpath,
+                              source=msource,
+                              mtime=mmtime,
+                              size=msize,
+                              present=True)
                     m.save()
             else:
                 print "WARNING: invalid movie directory format '%s'" % dirname
@@ -43,7 +52,7 @@ def addMovies(directory):
 
 def addSeries(directory):
     serieregex = re.compile('^(?P<title>.*?)$')
-    seasonregex = re.compile('^s(?:eason)?\s*0*(\d+)(?:\s+-\s+(?P<subtitle>.*?))?(?:\s+\((?P<year>\d{4})\))?(?:\s+\[(?P<source>[a-zA-Z0-9!"$%&/()=\\\\?_-]*)\])?(?:\s+\|(?P<language>.*)\|)?$', re.I)
+    seasonregex = re.compile('^s(?:eason)?\s*0*(?P<number>\d+)(?:\s+-\s+(?P<subtitle>.*?))?(?:\s+\((?P<year>\d{4})\))?(?:\s+\[(?P<source>[a-zA-Z0-9!"$%&/()=\\\\?_-]*)\])?(?:\s+\|(?P<language>.*)\|)?$', re.I)
     if os.path.isdir(directory):
         for serieDir in os.listdir(directory):
             seriePath = directory + '/' + serieDir
@@ -55,7 +64,12 @@ def addSeries(directory):
                         seasonDirName = os.path.basename(seasonDir)
                         match = seasonregex.match(seasonDirName)
                         if match:
-                            (seasonNumber, ssubname, syear, ssource, slanguage) = match.groups()
+                            seasonDict = match.groupdict()
+                            seasonNumber = seasonDict['number']
+                            ssubname = seasonDict.get('subtitle', None)
+                            syear = seasonDict.get('year', None)
+                            ssource = seasonDict.get('source', None)
+                            slanguage = seasonDict.get('language', None)
                             seasonPath = directory + '/' + serieDirName + '/' + seasonDirName
                             try:
                                 serie = Serie.objects.get(name=serieName)
