@@ -234,6 +234,15 @@ class Comment(models.Model):
     def __unicode__(self):
         return "<Comment from '%s' on '%s': '%s'>" % (self.user.name, str(self.item), self.subject)
 
+class Rating(models.Model):
+    user = models.ForeignKey(User)
+    item = models.ForeignKey('Item')
+    rating = models.IntegerField()
+    timestamp = models.DateTimeField(auto_now_add=True, auto_now=True)
+
+    def __unicode__(self):
+        return "<Rating from '%s' on '%s': '%d'>" % (self.user.name, str(self.item), self.rating)
+
 class Vote(models.Model):
     user = models.ForeignKey(User)
     movie = models.ForeignKey('Item')
