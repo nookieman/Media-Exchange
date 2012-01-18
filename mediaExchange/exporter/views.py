@@ -36,21 +36,16 @@ def exporterexport(request):
                      }, ...]
     }
     """
-    jsonStruct = {}
-    jsonStruct['movies'] = _jsonStructFromItemList(items=Movie.objects.all(),
-                                                   onlyDownloadable=True)
-    jsonStruct['series'] = _jsonStructFromItemList(items=Season.objects.all(),
-                                                   onlyDownloadable=True)
-    jsonStruct['keys'] = _jsonStructKeys()
+    jsonStruct = createExportStruct(movies=Movie.objects.all(),
+                                    seasons=Season.objects.all(),
+                                    onlyDownloadable=True)
     jsonString = simplejson.dumps(jsonStruct)
     return HttpResponse(jsonString, "application/json")
 
 @login_required
 def exporterexportall(request):
-    jsonStruct = {}
-    jsonStruct['movies'] = _jsonStructFromItemList(items=Movie.objects.all())
-    jsonStruct['series'] = _jsonStructFromItemList(items=Season.objects.all())
-    jsonStruct['keys'] = _jsonStructKeys()
+    jsonStruct = createExportStruct(movies=Movie.objects.all(),
+                                    seasons=Season.objects.all())
     jsonString = simplejson.dumps(jsonStruct)
     return HttpResponse(jsonString, "application/json")
 
@@ -70,6 +65,13 @@ def _jsonStructFromItemList(items, onlyDownloadable=False):
                                                        'key'           : downloadFileGroup.key.id})
         itemStruct.append(itemDict)
     return itemStruct
+
+def createExportStruct(movies, seasons, onlyDownloadable=False):
+    jsonStruct = {}
+    jsonStruct['movies'] = _jsonStructFromItemList(items=movies)
+    jsonStruct['series'] = _jsonStructFromItemList(items=seasons)
+    jsonStruct['keys'] = _jsonStructKeys()
+    return jsonStruct
 
 def _jsonStructKeys():
     keysStruct = {}
