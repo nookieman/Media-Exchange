@@ -1,6 +1,8 @@
-from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render_to_response, get_object_or_404
+from django.views.decorators.csrf import csrf_protect
 
+from mediaExchange.movies.forms import RatingForm
 from mediaExchange.movies.models import Item, UploadRequest
 
 import time
@@ -9,13 +11,13 @@ import time
 def ajaxgetstate(request, itemid):
     item = get_object_or_404(Item, pk=itemid)
     ur = None
-    if statehaschanged(request, item):
+    if _statehaschanged(request, item):
         ur = UploadRequest.objects.filter(item=item)
         if ur:
             ur=ur[0]
     return render_to_response('ajax/getstate.html', {'uploadRequest':ur})
 
-def statehaschanged(request, item):
+def _statehaschanged(request, item):
     result = True
     ur = UploadRequest.objects.filter(item=item)
     if ur:
@@ -49,3 +51,23 @@ def statehaschanged(request, item):
             if request.session['getstate'][item.id]['value'] == comp:
                 result = False
     return result
+
+@login_required
+@csrf_protect
+def ajaxrate(request):
+    message = None
+    if request.method == 'POST':
+        form = RatingForm(request.POST)
+        if form.is_valid():
+            if form.cleaned_data['rating'] > 0 and form.cleaned_data['rating'] <= 10:
+                rating = form.save(commit=False)
+                rating.user = request.user
+                rating.save()
+                message = "Thanks for your rating."
+            else:
+                message = "Please use a rating between 1 and 10."
+        else:
+            message = "%s\nInvalid rating form:\n%s" % (str(request.POST), str(form.errors))
+    else:
+        message = "Missing POST parameters."
+    return render_to_response('ajax/rate.html', {'message' : message})

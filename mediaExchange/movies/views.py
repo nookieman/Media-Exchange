@@ -7,8 +7,8 @@ from django.core.context_processors import csrf
 from django.shortcuts import render_to_response, get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 
-from mediaExchange.movies.forms import AddItemUploadForm
-from mediaExchange.movies.models import DownloadFile, DownloadFileGroup, EncryptionKey, ItemRequest, Movie, UploadRequest, Vote
+from mediaExchange.movies.forms import AddItemUploadForm, RatingForm
+from mediaExchange.movies.models import DownloadFile, DownloadFileGroup, EncryptionKey, ItemRequest, Movie, Rating, UploadRequest, Vote
 
 @login_required
 def moviesindex(request):
@@ -67,6 +67,13 @@ def getDetails(request, movie, message=None):
     urs = UploadRequest.objects.filter(done=False).order_by('id')
     pathAvailable = movie.path != None and os.path.exists(movie.path)
     form = AddItemUploadForm()
+    ratingInitial = {'item':movie}
+    try:
+        rating = Rating.objects.get(user=request.user, item=movie)
+        ratingInitial['rating'] = rating.rating
+    except Rating.DoesNotExist:
+        pass
+    ratingForm = RatingForm(initial=ratingInitial)
     c.update(csrf(request))
     c.update({'movie'              : movie,
               'size'               : sizeString,
@@ -77,7 +84,8 @@ def getDetails(request, movie, message=None):
               'uploadRequests'     : urs,
               'pathAvailable'      : pathAvailable,
               'message'            : message,
-              'addItemForm'        : form})
+              'addItemForm'        : form,
+              'ratingForm'         : ratingForm})
     return render_to_response('movies/details.html', c)
 
 @login_required

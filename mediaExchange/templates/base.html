@@ -4,9 +4,9 @@
 <head>
     <!--link rel="stylesheet" href="style.css" /-->
     <title>{% block title %}n00k{% endblock %}</title>
-{% if uploadRequests %}
     <script type="text/javascript" src="/media/prototype.js"></script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.0.0/prototype.js"></script>
+{% if uploadRequests %}
     <script>
 var items = Array(
 {% for ur in uploadRequests %}

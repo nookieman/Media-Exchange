@@ -237,7 +237,7 @@ class Comment(models.Model):
 class Rating(models.Model):
     user = models.ForeignKey(User)
     item = models.ForeignKey('Item')
-    rating = models.IntegerField()
+    rating = models.IntegerField(choices=((1,1),(2,2),(3,3),(4,4),(5,5),(6,6),(7,7),(8,8),(9,9),(10,10)))
     timestamp = models.DateTimeField(auto_now_add=True, auto_now=True)
 
     def __unicode__(self):

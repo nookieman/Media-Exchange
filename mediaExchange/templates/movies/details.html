@@ -118,16 +118,59 @@ Sorry, the files are not locally available and therefore no download links can b
 {% endif %}
 
 <br/>
+
+<script>
+    function submitRatingSuccess(transport) {
+        alert(transport.responseText)
+        $('ratingmessage').innerText = transport.responseText
+    }
+    function submitRatingFailure(transport) {
+        alert("Sorry, an error occurred. Please try again (later)." + transport.status)
+        alert(transport.responseText)
+    }
+    function submitRating() {
+        var select = document.getElementById('id_rating')
+        var rating = select.selectedIndex
+        if(rating > 0 && rating <= 10) {
+            var parameters = {'rating' : rating,
+                'csrfmiddlewaretoken' : "{{csrf_token}}",
+                'item' : '{{movie.id}}'
+            }
+            alert(parameters.toString())
+            var myAjax = new Ajax.Request('/ajax/rate/', {method     : 'post',
+                                                          onSuccess  : submitRatingSuccess,
+                                                          onFailure  : submitRatingFailure,
+                                                          parameters : parameters})
+            alert('request sent')
+        } else {
+           alert("Please select a value to rate the item")
+        }
+    }
+</script>
+
+<fieldset>
+    <legend>Rating</legend>
+    <form action="javascript:submitRating();" method="POST">{% csrf_token %}
+        <div id="ratingmessage"></div>
+        <table id="ratingtable">
+            {{ ratingForm }}
+            <tr><td><input type="submit" /></td></tr>
+        </table>
+    </form>
+</fieldset>
+
 <fieldset>
     <legend>Is this in a watchable quality?</legend>
     <form method="POST">{% csrf_token %}
-        <tr><td>
-            <select name="watchable">
-                <option>watchable</option>
-                <option>not watchable</option>
-            </select>
+        <table>
+            <tr><td>
+                <select name="watchable">
+                    <option>watchable</option>
+                    <option>not watchable</option>
+                </select>
             </td></tr>
-        <tr><td><input type="submit" /></td></tr>
+            <tr><td><input type="submit" /></td></tr>
+        </table>
     </form>
 </fieldset>
 
