@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if error %}
+<h4>{{ error|escape }}</h4>
+{% endif %}
+
+{% if form %}
+
+<form enctype="multipart/form-data" method="POST">{% csrf_token %}
+    <fieldset>
+    <legend>Import</legend>
+    <table>
+        {{ form }}
+        <tr><td><input type="submit" /></td></tr>
+    </table>
+    </fieldset>
+</form>
+
+{% endif %}
+
+{% endblock %}

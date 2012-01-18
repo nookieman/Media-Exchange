@@ -51,6 +51,60 @@ class Item(models.Model):
     def __unicode__(self):
         return "<Item %s by %s>" % (self.name, str(self.creator))
 
+    @staticmethod
+    def fromDict(struct):
+
+        keys = {}
+        if struct.has_key('keys'):
+            for keyid, keyvals in struct['keys'].items():
+                keys[keyid] = EncryptionKey.getOrCreate(chunkSize=keyvals['chunkSize'],
+                                                        keydata=keyvals['key'])
+
+        if struct.has_key('movies'):
+            for moviestruct in struct['movies']:
+                lang = Language.getOrCreate(moviestruct.get('language', None))
+                genre = Genre.getOrCreate(moviestruct.get('genre', None))
+                source = Source.getOrCreate(moviestruct.get('source', None))
+                movie = Movie.getOrCreate(name=moviestruct.get('name'),
+                                          size=moviestruct.get('size', None),
+                                          subname=moviestruct.get('subname', None),
+                                          year=moviestruct.get('year', None),
+                                          language=lang,
+                                          genre=genre,
+                                          source=source)
+                Item._createDownloadFileGroups(moviestruct.get('downloadFileGroups', []), keys)
+
+        if struct.has_key('series'):
+            from mediaExchange.series.models import Serie, Season
+            for seriestruct in struct['series']:
+                lang = Language.getOrCreate(seriestruct.get('language', None))
+                genre = Genre.getOrCreate(seriestruct.get('genre', None))
+                source = Source.getOrCreate(seriestruct.get('source', None))
+                serie = Serie.getOrCreate(seriestruct['name'])
+                season = Season.getOrCreate(serie=serie,
+                                            number=seriestruct['number'],
+                                            size=seriestruct.get('size', None),
+                                            subname=seriestruct.get('subname', None),
+                                            year=seriestruct.get('year', None),
+                                            language=lang,
+                                            genre=genre,
+                                            source=source)
+                Item._createDownloadFileGroups(seriestruct.get('downloadFileGroups', []), keys)
+
+    @staticmethod
+    def _createDownloadFileGroups(struct, keys):
+        for downloadFileGroup in struct:
+            key = keys[downloadFileGroup['key']]
+            dfg = DownloadFileGroup(item=season, key=key)
+            dfg.save()
+            for downloadLink in downloadFileGroup['downloadLinks']:
+                df = DownloadFile(downloadFileGroup=dfg,
+                                  downloadLink=downloadLink)
+                df.save()
+
+
+
+
 class Language(models.Model):
     name = models.CharField(max_length=256, blank=True, null=True)
 
@@ -59,12 +113,14 @@ class Language(models.Model):
 
     @staticmethod
     def getOrCreate(name):
-        lang = Language.objects.filter(name=name)
-        if len(lang) > 0:
-            lang = lang[0]
-        else:
-            lang = Language(name)
-            lang.save()
+        lang = None
+        if name:
+            lang = Language.objects.filter(name=name)
+            if len(lang) > 0:
+                lang = lang[0]
+            else:
+                lang = Language(name=name)
+                lang.save()
         return lang
 
 class Genre(models.Model):
@@ -75,12 +131,14 @@ class Genre(models.Model):
 
     @staticmethod
     def getOrCreate(name):
-        genre = Genre.objects.filter(name=name)
-        if len(genre) > 0:
-            genre = genre[0]
-        else:
-            genre = Genre(name)
-            genre.save()
+        genre = None
+        if name:
+            genre = Genre.objects.filter(name=name)
+            if len(genre) > 0:
+                genre = genre[0]
+            else:
+                genre = Genre(name=name)
+                genre.save()
         return genre
 
 class Source(models.Model):
@@ -91,12 +149,14 @@ class Source(models.Model):
 
     @staticmethod
     def getOrCreate(name):
-        source = Source.objects.filter(name=name)
-        if len(source) > 0:
-            source = source[0]
-        else:
-            source = Source(name)
-            source.save()
+        source = None
+        if name:
+            source = Source.objects.filter(name=name)
+            if len(source) > 0:
+                source = source[0]
+            else:
+                source = Source(name=name)
+                source.save()
         return source
 
 class Movie(Item):
@@ -108,6 +168,20 @@ class Movie(Item):
 
     def __unicode__(self):
         return self.name
+
+    @staticmethod
+    def exists(name, subname, language, year, genre, source):
+        return Movie.objects.filter(name=name, subname=subname, language=language, year=year, genre=genre, source=source).count() > 0
+
+    @staticmethod
+    def getOrCreate(name, subname, language, year, genre, source, size=None):
+        movie = Movie.objects.filter(name=name, subname=subname, language=language, year=year, genre=genre, source=source)
+        if len(movie) > 0:
+            movie = movie[0]
+        else:
+            movie = Movie(name=name, subname=subname, language=language, year=year, genre=genre, source=source)
+            movie.save()
+        return movie
 
     def toDict(self):
         d = {'id'   : self.id,

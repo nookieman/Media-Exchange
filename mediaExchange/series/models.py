@@ -9,6 +9,17 @@ class Serie(models.Model):
     def __unicode__(self):
         return self.name
 
+    @staticmethod
+    def getOrCreate(name):
+        serie = Serie.objects.filter(name=name)
+        if len(serie) > 0:
+            serie = serie[0]
+        else:
+            serie = Serie(name)
+            serie.save()
+        return serie
+
+
 class Season(Item):
     serie = models.ForeignKey('Serie')
     subname = models.CharField(max_length=256, blank=True, null=True)
@@ -21,6 +32,16 @@ class Season(Item):
 
     def __unicode__(self):
         return "%s S%d" % (self.serie.name, self.number)
+
+    @staticmethod
+    def getOrCreate(serie, subname, number, language, genre, source, year, size=None):
+        season = Season.objects.filter(serie=serie, subname=subname, number=number, language=language, genre=genre, source=source, year=year)
+        if len(season) > 0:
+            season = season[0]
+        else:
+            season = Season(serie=serie, subname=subname, number=number, language=language, genre=genre, source=source, year=year)
+            season.save()
+        return season
 
     def toDict(self):
         d = {'id'     : self.id,
