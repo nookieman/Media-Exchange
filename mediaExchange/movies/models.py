@@ -224,6 +224,16 @@ class UploadRequest(models.Model):
     def __unicode__(self):
         return 'UploadRequest: %s %s' % (self.item, 'done' if self.done else 'not done')
 
+class Comment(models.Model):
+    user = models.ForeignKey(User)
+    item = models.ForeignKey('Item')
+    subject = models.CharField(max_length=256)
+    body = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __unicode__(self):
+        return "<Comment from '%s' on '%s': '%s'>" % (self.user.name, str(self.item), self.subject)
+
 class Vote(models.Model):
     user = models.ForeignKey(User)
     movie = models.ForeignKey('Item')
