@@ -248,7 +248,7 @@ class ItemInstance(models.Model):
 
 
     def toDict(self):
-        d = self.item.toDict()
+        d = {}
         if self.language:
             d['language'] = self.language.name
         if self.source:
