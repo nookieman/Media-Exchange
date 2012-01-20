@@ -73,10 +73,11 @@ def createExportStruct(movies, seasons, onlyDownloadable=False):
     jsonStruct['keys'] = _jsonStructKeys()
     return jsonStruct
 
-def _jsonStructKeys():
+def _jsonStructKeys(keyIdList=None):
     keysStruct = {}
     for key in EncryptionKey.objects.all():
-        keysStruct[key.id] = {'chunkSize' : key.chunkSize,
-                              'key'       : key.key}
+        if not keyIdList or key.id in keyIdList:
+            keysStruct[key.id] = {'chunkSize' : key.chunkSize,
+                                  'key'       : key.key}
     return keysStruct
 
