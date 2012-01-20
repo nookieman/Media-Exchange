@@ -62,7 +62,7 @@ def getDetails(request, item, message=None):
     ratingForm = RatingForm(initial=ratingInitial)
     c.update(csrf(request))
     c.update({'movie'              : item,
-              'movieInstances'     : itemInstances,
+              'itemInstances'     : itemInstances,
               'wvotes'             : wvotes,
               'nvotes'             : nvotes,
               'uploadRequests'     : urs,
