@@ -42,7 +42,7 @@ def moviescreate(request, item_instance_id):
         if not ur:
             ur = UploadRequest(itemInstance=itemInstance, user=request.user)
             ur.save()
-    return getDetails(request, movie)
+    return getDetails(request, itemInstance.item)
 
 def getDetails(request, item, message=None):
     c = {}
@@ -109,23 +109,24 @@ def moviesrequest(request, movie_id):
     c = {}
     itemInstance = get_object_or_404(ItemInstance, pk=item_instance_id)
     if movie.creator:
-        msg = sendMovieRequestMail(movie, request.user)
+        msg = sendMovieRequestMail(itemInstance, request.user)
         if not msg:
-            ItemRequest(requester=request.user, itemInstance=item_instance_id).save()
+            ItemRequest(requester=request.user, itemInstance=itemInstance).save()
             msg = "The contributor received a message of your request."
     else:
         msg = "Sorry the contributor of this item is unknown."
     return getDetails(request, itemInstance.item, msg)
 
-def sendMovieRequestMail(movie, requester):
+def sendMovieRequestMail(itemInstance, requester):
+    movie = itemInstance.item.getRealModel()
     movietitle = "%s" % movie.name
     if movie.subname:
         movietitle += " - %s" % movie.subname
     subject = "Request for '%s' from '%s'" % (movietitle, str(requester))
     body = "%s has requested movie '%s'" % (movietitle, str(requester))
-    if movie.source:
-        body += "in %s" % movie.source.name
-    return sendMail([movie.creator.email], subject, body)
+    if itemInstance.source:
+        body += "in %s" % itemInstance.source.name
+    return sendMail([itemInstance.creator.email], subject, body)
 
 def sendMail(rcpts, subject, body):
     sender = "mediaExchange@foobar.com"
