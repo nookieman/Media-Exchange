@@ -6,7 +6,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 
 from mediaExchange.movies.forms import AddItemUploadForm
-from mediaExchange.movies.models import UploadRequest, DownloadFileGroup, ItemRequest
+from mediaExchange.movies.models import UploadRequest, DownloadFileGroup, ItemRequest, ItemInstance
 from mediaExchange.movies.views import addLinks, sendMail
 from mediaExchange.series.models import Serie, Season
 
@@ -46,31 +46,13 @@ def getSerieDetails(serie):
 
 def getSeasonDetails(request, season, message=None):
     c = {}
-    sizeString = "Unknown"
-    size = season.size
-    if size:
-        s = (size, 'byte')
-        if size > 1073741824:
-            s = (round(size/1073741824.0, 2), 'GB')
-        elif size > 1048576:
-            s = (round(size/1048576.0, 2), 'MB')
-        elif size > 1024:
-            s = (round(size/1024.0, 2), 'KB')
-        sizeString = "%.2f %s" % s
-    downloadFileGroups = DownloadFileGroup.objects.filter(item=season)
-    ur = UploadRequest.objects.filter(item=season)
-    if ur:
-        ur = ur[0]
+    itemInstances = ItemInstance.objects.filter(item=season)
     urs = UploadRequest.objects.filter(done=False).order_by('id')
-    pathAvailable = season.path != None and os.path.exists(season.path)
     form = AddItemUploadForm()
     c.update({'serie'              : season.serie,
               'season'             : season,
-              'size'               : sizeString,
-              'downloadFileGroups' : downloadFileGroups,
-              'uploadRequest'      : ur,
+              'itemInstances'      : itemInstances,
               'uploadRequests'     : urs,
-              'pathAvailable'      : pathAvailable,
               'message'            : message,
               'addItemForm'        : form})
     c.update(csrf(request))

@@ -8,7 +8,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 
 from mediaExchange.movies.forms import AddItemUploadForm, RatingForm
-from mediaExchange.movies.models import DownloadFile, DownloadFileGroup, EncryptionKey, ItemRequest, Movie, Rating, UploadRequest, Vote
+from mediaExchange.movies.models import DownloadFile, DownloadFileGroup, EncryptionKey, ItemInstance, ItemRequest, Movie, Rating, UploadRequest, Vote
 
 @login_required
 def moviesindex(request):
@@ -34,55 +34,38 @@ def moviesdetails(request, movie_id):
 
 @csrf_protect
 @login_required
-def moviescreate(request, movie_id):
+def moviescreate(request, item_instance_id):
     print 'create called'
-    movie = get_object_or_404(Movie, pk=movie_id)
-    if not DownloadFileGroup.objects.filter(item=movie):
-        ur = UploadRequest.objects.filter(item=movie)
+    itemInstance = get_object_or_404(ItemInstance, pk=item_instance_id)
+    if not DownloadFileGroup.objects.filter(itemInstance=itemInstance):
+        ur = UploadRequest.objects.filter(itemInstance=itemInstance)
         if not ur:
-            ur = UploadRequest(item=movie, user=request.user)
+            ur = UploadRequest(itemInstance=itemInstance, user=request.user)
             ur.save()
     return getDetails(request, movie)
 
-def getDetails(request, movie, message=None):
+def getDetails(request, item, message=None):
     c = {}
 
-    sizeString = "Unknown"
-    size = movie.size
-    if size:
-        s = (size, 'byte')
-        if size > 1073741824:
-            s = (round(size/1073741824.0, 2), 'GB')
-        elif size > 1048576:
-            s = (round(size/1048576.0, 2), 'MB')
-        elif size > 1024:
-            s = (round(size/1024.0, 2), 'KB')
-        sizeString = "%.2f %s" % s
-    downloadFileGroups = DownloadFileGroup.objects.filter(item=movie)
-    ur = UploadRequest.objects.filter(item=movie)
-    if ur:
-        ur = ur[0]
-    wvotes = Vote.objects.filter(movie=movie, watchable=True)
-    nvotes = Vote.objects.filter(movie=movie, watchable=False)
+    item = item.getRealModel()
+    wvotes = Vote.objects.filter(movie=item, watchable=True)
+    nvotes = Vote.objects.filter(movie=item, watchable=False)
     urs = UploadRequest.objects.filter(done=False).order_by('id')
-    pathAvailable = movie.path != None and os.path.exists(movie.path)
     form = AddItemUploadForm()
-    ratingInitial = {'item':movie}
+    ratingInitial = {'item':item}
     try:
-        rating = Rating.objects.get(user=request.user, item=movie)
+        rating = Rating.objects.get(user=request.user, item=item)
         ratingInitial['rating'] = rating.rating
     except Rating.DoesNotExist:
         pass
+    itemInstances = ItemInstance.objects.filter(item=item)
     ratingForm = RatingForm(initial=ratingInitial)
     c.update(csrf(request))
-    c.update({'movie'              : movie,
-              'size'               : sizeString,
-              'downloadFileGroups' : downloadFileGroups,
-              'uploadRequest'      : ur,
+    c.update({'movie'              : item,
+              'movieInstances'     : itemInstances,
               'wvotes'             : wvotes,
               'nvotes'             : nvotes,
               'uploadRequests'     : urs,
-              'pathAvailable'      : pathAvailable,
               'message'            : message,
               'addItemForm'        : form,
               'ratingForm'         : ratingForm})
@@ -90,14 +73,14 @@ def getDetails(request, movie, message=None):
 
 @login_required
 @csrf_protect
-def moviesaddlinks(request, movie_id):
+def moviesaddlinks(request, item_instance_id):
     c = {}
-    movie = get_object_or_404(Movie, pk=movie_id)
+    itemInstance = get_object_or_404(ItemInstance, pk=item_instance_id)
     form = AddItemUploadForm(request.POST, request.FILES)
-    msg = addLinks(item=movie, form=form)
-    return getDetails(request, movie, msg)
+    msg = addLinks(itemInstance=itemInstance, form=form)
+    return getDetails(request, itemInstance.item, msg)
 
-def addLinks(item, form):
+def addLinks(itemInstance, form):
     msg = "Unable to add new links: Invalid form data."
     if form.is_valid():
         if form.cleaned_data['dlLinks'] or form.cleaned_data['dlLinksFile']:
@@ -108,7 +91,7 @@ def addLinks(item, form):
                 dlUrls = [ url.strip() for url in form.cleaned_data['dlLinksFile'] ]
             if len(dlUrls) > 0:
                 key = EncryptionKey.fromFileHandle(form.cleaned_data['keyfile'])
-                downloadFileGroup = DownloadFileGroup(item=item, key=key)
+                downloadFileGroup = DownloadFileGroup(itemInstance=itemInstance, key=key)
                 downloadFileGroup.save()
                 for url in dlUrls:
                     df = DownloadFile(downloadFileGroup=downloadFileGroup, downloadLink=url)
@@ -124,15 +107,15 @@ def addLinks(item, form):
 @login_required
 def moviesrequest(request, movie_id):
     c = {}
-    movie = get_object_or_404(Movie, pk=movie_id)
+    itemInstance = get_object_or_404(ItemInstance, pk=item_instance_id)
     if movie.creator:
         msg = sendMovieRequestMail(movie, request.user)
         if not msg:
-            ItemRequest(requester=request.user, item=movie).save()
+            ItemRequest(requester=request.user, itemInstance=item_instance_id).save()
             msg = "The contributor received a message of your request."
     else:
         msg = "Sorry the contributor of this item is unknown."
-    return getDetails(request, movie, msg)
+    return getDetails(request, itemInstance.item, msg)
 
 def sendMovieRequestMail(movie, requester):
     movietitle = "%s" % movie.name
