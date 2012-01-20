@@ -76,6 +76,7 @@ def _jsonStructFromItemList(items, onlyDownloadable=False):
                 downloadFileGroupsList.append({'downloadLinks' : downloadLinks,
                                                'key'           : downloadFileGroup.key.id})
             instanceDict['downloadFileGroups'] = downloadFileGroupsList
+            instancesList.append(instanceDict)
         itemDict['instances'] = instancesList
         itemStruct.append(itemDict)
     return itemStruct
