@@ -33,7 +33,7 @@ def main():
             ur.save()
             print 'processing', ur
             pack(ur)
-            if DownloadFileGroup.objects.filter(item=ur.item):
+            if DownloadFileGroup.objects.filter(itemInstance=ur.itemInstance):
                 ur.done = True
                 ur.save()
         else:
@@ -42,11 +42,11 @@ def main():
 def selectUploadRequest():
     ur = None
     for uploadRequest in UploadRequest.objects.filter(done = False).order_by('id'):
-        if os.path.exists(uploadRequest.item.path):
+        if os.path.exists(uploadRequest.itemInstance.path):
             ur = uploadRequest
             break
         else:
-            print "WARNING: item path does not exist: '%s'" % uploadRequest.item.path
+            print "WARNING: item path does not exist: '%s'" % uploadRequest.itemInstance.path
     return ur
 
 def pack(uploadRequest):
@@ -60,12 +60,12 @@ def pack(uploadRequest):
         uploadRequest.state=STATE_TARING
         uploadRequest.save()
 
-        taredFile = tarFiles([uploadRequest.item.path])
+        taredFile = tarFiles([uploadRequest.itemInstance.path])
 
         uploadRequest.state=STATE_ENCRYPTING
         uploadRequest.save()
 
-        hashname = createHash([uploadRequest.item.path])
+        hashname = createHash([uploadRequest.itemInstance.path])
         encfile = encryptFile(taredFile, hashname, chunkSize, keyData, uploadRequest)
 
         uploadRequest.state=STATE_SPLITTING
@@ -78,7 +78,7 @@ def pack(uploadRequest):
         uploadRequest.save()
 
         linkList = uploadFiles(uploadRequest=uploadRequest, fileHoster=mu, files=encfiles)
-        storeLinks(linkList, uploadRequest.item, chunkSize, keyData)
+        storeLinks(linkList, uploadRequest.itemInstance, chunkSize, keyData)
     except KeyboardInterrupt, e:
         uploadRequest.state=STATE_QUEUED
         uploadRequest.save()
@@ -109,11 +109,11 @@ def pack(uploadRequest):
                 deletefiles += encfiles
     cleanup(deletefiles)
 
-def storeLinks(linkList, item, chunkSize, keyData):
+def storeLinks(linkList, itemInstance, chunkSize, keyData):
     if len(linkList) > 0:
         key = EncryptionKey.getOrCreate(chunkSize=chunkSize, keydata=keyData)
         key.save()
-        downloadFileGroup = DownloadFileGroup(item=item, key=key)
+        downloadFileGroup = DownloadFileGroup(itemInstance=itemInstance, key=key)
         downloadFileGroup.save()
         for link in linkList:
             df = DownloadFile(downloadFileGroup=downloadFileGroup,
