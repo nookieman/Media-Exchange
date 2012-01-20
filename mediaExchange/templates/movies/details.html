@@ -8,8 +8,6 @@
 <h2>{{movie.subname|escape }}</h2>
 {% endif %}
 
-<!--<div>Path: {{ movie.path|escape }}</div>-->
-
 {% if movie.year %}
 <div>Year: {{ movie.year|escape }}</div>
 {% endif %}
@@ -18,77 +16,82 @@
 <div>Genre: {{ movie.genre|escape }}</div>
 {% endif %}
 
-{% if movie.language %}
-<div>Language: {{ movie.language|escape }}</div>
-{% endif %}
-
-{% if movie.source %}
-<div>Source: {{ movie.source|escape }}</div>
-{% endif %}
-
 <div>IMDB: <a target="_blank" href="http://www.imdb.com/find?s=all&q={{ movie.name|urlencode }}{%if movie.subname %}+{{ movie.subname|urlencode }}{% endif %}">search</a></div>
-
-{% if movie.size and size %}
-<div>Size: {{ size|escape }}</div>
-{% endif %}
 
 <br />
 
-{% if movie.creator %}
-<div>Contributor: {{ movie.creator.username|escape }}</div>
+
+<div>Downloads:
+{% for itemInstance in itemInstances %}
+<fieldset>
+
+{% if itemInstance.source %}
+<div>Source: {{ itemInstance.source|escape }}</div>
 {% endif %}
 
-<div>Download:
-{% for dfg in downloadFileGroups %}
-<div id="LinkGroup">
-    <fieldset>
-        <legend>Download Links:</legend>
-        <a target="_blank" href="/items/key/{{ dfg.key.id }}/">keyfile</a>
-    {% for df in dfg.getDownloadFiles %}
-        <br/>
-        <a target="_blank" href="{{ df.downloadLink|urlencode }}">{{ df.downloadLink|escape }}</a>
+{% if movie.language %}
+<div>Language: {{ itemInstance.language|escape }}</div>
+{% endif %}
+
+<div>Size: {{ itemInstance.getSizeString|escape }}</div>
+
+{% if itemInstance.creator %}
+<div>Contributor: {{ itemInstance.creator.username|escape }}</div>
+{% endif %}
+
+
+    {% for dfg in itemInstance.getDownloadFileGroups %}
+    <div id="LinkGroup">
+        <fieldset>
+            <legend>Download Links:</legend>
+            <a target="_blank" href="/items/key/{{ dfg.key.id }}/">keyfile</a>
+        {% for df in dfg.getDownloadFiles %}
+            <br/>
+            <a target="_blank" href="{{ df.downloadLink|urlencode }}">{{ df.downloadLink|escape }}</a>
+        {% endfor %}
+        </fieldset>
+    </div>
     {% endfor %}
-    </fieldset>
-</div>
-{% endfor %}
 
-{% if not uploadRequest.done %}
-    {% if uploadRequest %}
-Already requested. The file is now <span name="itemState{{ uploadRequest.item.id }}">
-        {% ifequal uploadRequest.state 0 %}
-queued
-        {% endifequal %}
-        {% ifequal uploadRequest.state 1 %}
-taring ({{ uploadRequest.tared  }}%)
-        {% endifequal %}
-        {% ifequal uploadRequest.state 2 %}
-encrypting ({{ uploadRequest.encrypted  }}%)
-        {% endifequal %}
-        {% ifequal uploadRequest.state 3 %}
-splitting ({{ uploadRequest.splitted }}%)
-        {% endifequal %}
-        {% ifequal uploadRequest.state 4 %}
-uploading ({{ uploadRequest.uploaded  }}%)
-        {% endifequal %}
-        </span>.
+    {% if itemInstance.getUploadRequest %}
+        {% if uploadRequest %}
+    Already requested. The file is now <span name="itemState{{ uploadRequest.itemInstance.id }}">
+            {% ifequal uploadRequest.state 0 %}
+    queued
+            {% endifequal %}
+            {% ifequal uploadRequest.state 1 %}
+    taring ({{ uploadRequest.tared  }}%)
+            {% endifequal %}
+            {% ifequal uploadRequest.state 2 %}
+    encrypting ({{ uploadRequest.encrypted  }}%)
+            {% endifequal %}
+            {% ifequal uploadRequest.state 3 %}
+    splitting ({{ uploadRequest.splitted }}%)
+            {% endifequal %}
+            {% ifequal uploadRequest.state 4 %}
+    uploading ({{ uploadRequest.uploaded  }}%)
+            {% endifequal %}
+            </span>.
 
-    {% else %}
-        {% if not downloadFileGroups %}
-            {% if movie.present %}
-                {% if pathAvailable %}
-<a href="/movies/create/{{ movie.id }}/">Create Download</a>
+        {% else %}
+            {% if not downloadFileGroups %}
+                {% if itemInstance.present %}
+                    {% if itemInstance.isPathAvailable %}
+    <a href="/movies/create/{{ itemInstance.id }}/">Create Download</a>
+                    {% else %}
+    The files are currently not available, but you can create a request, that will be served later, when the files are available again <a href="/movies/create/{{ itemInstance.id }}/">here</a>.
+                    {% endif %}
                 {% else %}
-The files are currently not available, but you can create a request, that will be served later, when the files are available again <a href="/movies/create/{{ movie.id }}/">here</a>.
-                {% endif %}
-            {% else %}
-Sorry, the files are not locally available and therefore no download links can be created.
-                {% if movie.creator %}
-<a href="/movies/request/{{ movie.id }}">Request upload of the movie.</a>
-                {% endif %}
-            {% endif%}
+    Sorry, the files are not locally available and therefore no download links can be created.
+                    {% if itemInstance.creator %}
+    <a href="/movies/request/{{ itemInstance.id }}">Request upload of the movie.</a>
+                    {% endif %}
+                {% endif%}
+            {% endif %}
         {% endif %}
     {% endif %}
-{% endif %}
+</fieldset>
+{% endfor %}
 
 {% if message %}
     <div>

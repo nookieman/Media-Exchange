@@ -10,7 +10,7 @@
     <script>
 var items = Array(
 {% for ur in uploadRequests %}
-    '{{ ur.item.id }}'{% if not forloop.last %},{% endif %}
+    '{{ ur.itemInstance.id }}'{% if not forloop.last %},{% endif %}
 {% endfor %}
 );
 
@@ -82,7 +82,7 @@ window.setInterval('updateItem()', delay);
     {% if uploadRequests %}
         <ul>
             {% for ur in uploadRequests %}
-            <li><a href="/items/{{ur.item.id}}/">{{ ur.item|escape }}</a>
+            <li><a href="/items/{{ur.item.id}}/">{{ ur.itemInstance|escape }}</a>
             (
             <span name="itemState{{ ur.item.id }}">
             {% ifequal ur.state 0 %}
