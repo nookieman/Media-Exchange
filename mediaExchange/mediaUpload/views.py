@@ -9,7 +9,7 @@ from django.core.context_processors import csrf
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from mediaExchange.settings import MOVIE_SAVE_DIRECTORY
-from mediaExchange.movies.models import Movie, Language, Genre, Source, UploadRequest, EncryptionKey, DownloadFile, DownloadFileGroup
+from mediaExchange.movies.models import Movie, Language, Genre, Source, UploadRequest, EncryptionKey, DownloadFile, DownloadFileGroup, ItemInstance
 from mediaExchange.series.models import Serie, Season
 from mediaExchange.mediaUpload.forms import UploadForm, MovieUploadForm, SeriesUploadForm
 from mediaExchange.mediaUpload.handlers import ProgressUploadHandler
@@ -74,17 +74,9 @@ def handleMovie(request):
     if form.is_valid():
         if not movieExists(form):
             try:
-                language = None
-                if form.cleaned_data['language']:
-                    language = Language.getOrCreate(form.cleaned_data['language'])
-
-                genre = None
-                if form.cleaned_data['genre']:
-                    genre = Genre.getOrCreate(form.cleaned_data['genre'])
-
-                source = None
-                if form.cleaned_data['source']:
-                    source = Source.getOrCreate(form.cleaned_data['source'])
+                language = Language.getOrCreate(form.cleaned_data['language'])
+                genre = Genre.getOrCreate(form.cleaned_data['genre'])
+                source = Source.getOrCreate(form.cleaned_data['source'])
 
                 subname = None
                 if form.cleaned_data['subname']:
@@ -99,12 +91,14 @@ def handleMovie(request):
                     filesize = form.cleaned_data['size']
 
                 m = Movie(name=form.cleaned_data['name'], size=filesize,
-                          subname=subname, language=language, year=year,
-                          genre=genre, source=source, present=False,
-                          creator=request.user)
+                          subname=subname, year=year, genre=genre)
                 m.save()
+                itemInstance = ItemInstance(size=filesize, language=language,
+                                            source=source, present=False,
+                                            creator=request.user, item=m)
+                itemInstance.save()
                 if form.cleaned_data['file']:
-                    m.path = generateDestinationPath(form)
+                    itemInstance.path = generateDestinationPath(form)
                     if form.cleaned_data['tar']:
                         tf = tarfile.open(fileobj=form.cleaned_data['file'])
                         tf.extractall(path=path)
@@ -113,10 +107,10 @@ def handleMovie(request):
                         for chunk in form.cleaned_data['file'].chunks():
                             destination.write(chunk)
                         destination.close()
-                    m.size = form.cleaned_data['file'].size
-                    m.mtime = int(os.stat(path).st_mtime)
-                    m.present = True
-                    m.save()
+                    itemInstance.size = form.cleaned_data['file'].size
+                    itemInstance.mtime = int(os.stat(path).st_mtime)
+                    itemInstance.present = True
+                    itemInstance.save()
                     form = None
                     error = 'Thank you for contributing.'
                 elif (form.cleaned_data['dlLinks'] or form.cleaned_data['dlLinksFile']) and form.cleaned_data['keyfile']:
@@ -127,7 +121,7 @@ def handleMovie(request):
                         dlUrls = [ url.strip() for url in form.cleaned_data['dlLinksFile'] ]
                     if len(dlUrls) > 0:
                         key = EncryptionKey.fromFileHandle(form.cleaned_data['keyfile'])
-                        downloadFileGroup = DownloadFileGroup(item=m, key=key)
+                        downloadFileGroup = DownloadFileGroup(item=itemInstance, key=key)
                         downloadFileGroup.save()
                         for url in dlUrls:
                             df = DownloadFile(downloadFileGroup=downloadFileGroup, downloadLink=url)
@@ -156,17 +150,9 @@ def handleSerie(request):
         serie = Serie.objects.filter(name=form.cleaned_data['name'])[0]
         if not seasonExists(serie, form):
             try:
-                language = None
-                if form.cleaned_data['language']:
-                    language = Language.getOrCreate(form.cleaned_data['language'])
-
-                genre = None
-                if form.cleaned_data['genre']:
-                    genre = Genre.getOrCreate(form.cleaned_data['genre'])
-
-                source = None
-                if form.cleaned_data['source']:
-                    source = Source.getOrCreate(form.cleaned_data['source'])
+                language = Language.getOrCreate(form.cleaned_data['language'])
+                genre = Genre.getOrCreate(form.cleaned_data['genre'])
+                source = Source.getOrCreate(form.cleaned_data['source'])
 
                 number = None
                 if form.cleaned_data['number']:
@@ -184,14 +170,19 @@ def handleSerie(request):
                 if form.cleaned_data['size']:
                     filesize = form.cleaned_data['size']
 
-                season = Season(serie=serie, size=filesize, subname=subname,
-                                number=number, language=language, year=year,
-                                genre=genre, source=source, present=False,
-                                creator=request.user)
+                season = Season.getOrCreate(serie=serie, size=filesize,
+                                            subname=subname, number=number,
+                                            language=language, year=year,
+                                            genre=genre, source=source,
+                                            present=False, creator=request.user)
                 season.save()
+                itemInstance = ItemInstance(size=filesize, language=language,
+                                            source=source, present=False,
+                                            creator=requests.user, item=season)
+                itemInstance.save()
 
                 if form.cleaned_data['file']:
-                    season.path = generateDestinationPath(form)
+                    itemInstance.path = generateDestinationPath(form)
                     if form.cleaned_data['tar']:
                         tf = tarfile.open(fileobj=form.cleaned_data['file'])
                         tf.extractall(path=path)
@@ -200,10 +191,10 @@ def handleSerie(request):
                         for chunk in form.cleaned_data['file'].chunks():
                             destination.write(chunk)
                         destination.close()
-                    season.filesize = form.cleaned_data['file'].size
-                    season.mtime = int(os.stat(path).st_mtime)
-                    season.present = True
-                    season.save()
+                    itemInstance.filesize = form.cleaned_data['file'].size
+                    itemInstance.mtime = int(os.stat(path).st_mtime)
+                    itemInstance.present = True
+                    itemInstance.save()
                     form = None
                     error = 'Thank you for contributing.'
                 elif (form.cleaned_data['dlLinks'] or form.cleaned_data['dlLinksFile']) and form.cleaned_data['keyfile']:
@@ -214,7 +205,7 @@ def handleSerie(request):
                         dlUrls = [ url.strip() for url in form.cleaned_data['dlLinksFile'] ]
                     if len(dlUrls) > 0:
                         key = EncryptionKey.fromFileHandle(form.cleaned_data['keyfile'])
-                        downloadFileGroup = DownloadFileGroup(item=season, key=key)
+                        downloadFileGroup = DownloadFileGroup(itemInstance=itemInstance, key=key)
                         downloadFileGroup.save()
                         for url in dlUrls:
                             df = DownloadFile(downloadFileGroup=downloadFileGroup, downloadLink=url)
@@ -232,38 +223,6 @@ def handleSerie(request):
         error = 'invalid SeriesUploadForm'
     return form, error
 
-def movieExists(form):
-    result = False
-    rms = Movie.objects.filter(name=form.cleaned_data['name'])
-    for rm in rms:
-        if form.cleaned_data['subname'] == rm.subname or (not form.cleaned_data['subname'] and not rm.subname):
-            if form.cleaned_data['year'] == rm.year or (not form.cleaned_data['year'] and not rm.year):
-                if form.cleaned_data['source'] == rm.source or (not form.cleaned_data['source'] and not rm.source):
-                    if form.cleaned_data['language'] == rm.language or (not form.cleaned_data['language'] and not rm.language):
-                        result = True
-                        break
-    return result
-
-def serieExists(title):
-    series = Serie.objects.filter(name=title)
-    return len(series) > 0
-
-def createSerie(title):
-    serie = Serie(name=title)
-    serie.save()
-    return serie
-
-def seasonExists(serie, form):
-    result = False
-    seasons = Season.objects.filter(serie=serie)
-    for season in seasons:
-        if form.cleaned_data['number'] == season.number:
-            if form.cleaned_data['subname'] == season.subname or (not form.cleaned_data['subname'] and not season.subname):
-                if form.cleaned_data['source'] == season.source or (not form.cleaned_data['source'] and not season.source):
-                    if form.cleaned_data['language'] == season.language or (not form.cleaned_data['language'] and not season.language):
-                        result = True
-                        break
-    return result
 
 #TODO this has to be split for movies and series
 def generateDestinationPath(form):
