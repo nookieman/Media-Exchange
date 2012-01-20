@@ -24,36 +24,46 @@ class EncryptionKey(models.Model):
         return key
 
 class DownloadFileGroup(models.Model):
-    item = models.ForeignKey('Item')
+    itemInstance = models.ForeignKey('ItemInstance')
     key = models.ForeignKey('EncryptionKey', blank=False, null=False)
 
     def getDownloadFiles(self):
         return DownloadFile.objects.filter(downloadFileGroup=self.id)
 
     def __unicode__(self):
-        return "<DownloadFileGroup %s>" % str(self.item)
+        return "<DownloadFileGroup %s>" % str(self.itemInstance)
 
 class DownloadFile(models.Model):
     downloadFileGroup = models.ForeignKey('DownloadFileGroup')
     downloadLink = models.URLField(max_length=1024, blank=True, null=True)
 
     def __unicode__(self):
-        return "<DownloadFile %s (%s)" % (str(self.downloadFileGroup.item), str(self.downloadLink))
+        return "<DownloadFile %s (%s)" % (str(self.downloadFileGroup.itemInstance), str(self.downloadLink))
 
 class Item(models.Model):
-    creator = models.ForeignKey(User, blank=True, null=True)
     name = models.CharField(max_length=256)
-    path = models.CharField(max_length=1024, blank=True, null=True)
-    present = models.BooleanField(default=False)
-    size = models.IntegerField(blank=True, null=True)
-    mtime = models.IntegerField(blank=True, null=True)
 
     def __unicode__(self):
-        return "<Item %s by %s>" % (self.name, str(self.creator))
+        return "<Item '%s'>" % (self.name)
+
+    def getRealModel(self):
+        realModel = None
+        try:
+            realModel = Movie.objects.get(id=self.id)
+        except Movie.DoesNotExist:
+            try:
+                from mediaExchange.series.models import Season
+                realModel = Season.objects.get(id=self.id)
+            except Season.DoesNotExist:
+                raise Exception("ERROR: Item not identifiable")
+        return realModel
+
+    def toDict(self):
+        realModel = self.getRealModel()
+        return realModel.toDict()
 
     @staticmethod
     def fromDict(struct):
-
         keys = {}
         if struct.has_key('keys'):
             for keyid, keyvals in struct['keys'].items():
@@ -66,13 +76,15 @@ class Item(models.Model):
                 genre = Genre.getOrCreate(moviestruct.get('genre', None))
                 source = Source.getOrCreate(moviestruct.get('source', None))
                 movie = Movie.getOrCreate(name=moviestruct.get('name'),
-                                          size=moviestruct.get('size', None),
                                           subname=moviestruct.get('subname', None),
                                           year=moviestruct.get('year', None),
+                                          genre=genre)
+                movieInstance = ItemInstance.getOrCreate(item=movie,
                                           language=lang,
-                                          genre=genre,
-                                          source=source)
-                Item._createDownloadFileGroups(moviestruct.get('downloadFileGroups', []), keys)
+                                          source=source,
+                                          size=moviestruct.get('size', None))
+                Item._createDownloadFileGroups(moviestruct.get('downloadFileGroups', []),
+                                               movieInstance, keys)
 
         if struct.has_key('series'):
             from mediaExchange.series.models import Serie, Season
@@ -83,26 +95,26 @@ class Item(models.Model):
                 serie = Serie.getOrCreate(seriestruct['name'])
                 season = Season.getOrCreate(serie=serie,
                                             number=seriestruct['number'],
-                                            size=seriestruct.get('size', None),
                                             subname=seriestruct.get('subname', None),
                                             year=seriestruct.get('year', None),
-                                            language=lang,
-                                            genre=genre,
-                                            source=source)
-                Item._createDownloadFileGroups(seriestruct.get('downloadFileGroups', []), keys)
+                                            genre=genre)
+                seasonInstance = ItemInstance.getOrCreate(item=season,
+                                                          language=lang,
+                                                          source=source,
+                                                          size=seriestruct.get('size', None))
+                Item._createDownloadFileGroups(seriestruct.get('downloadFileGroups', []),
+                                               seasonInstance, keys)
 
     @staticmethod
-    def _createDownloadFileGroups(struct, keys):
+    def _createDownloadFileGroups(struct, itemInstance, keys):
         for downloadFileGroup in struct:
             key = keys[downloadFileGroup['key']]
-            dfg = DownloadFileGroup(item=season, key=key)
+            dfg = DownloadFileGroup(itemInstance=itemInstance, key=key)
             dfg.save()
             for downloadLink in downloadFileGroup['downloadLinks']:
                 df = DownloadFile(downloadFileGroup=dfg,
                                   downloadLink=downloadLink)
                 df.save()
-
-
 
 
 class Language(models.Model):
@@ -161,58 +173,119 @@ class Source(models.Model):
 
 class Movie(Item):
     subname = models.CharField(max_length=256, blank=True, null=True)
-    language = models.ForeignKey('Language', blank=True, null=True)
     year = models.IntegerField(blank=True, null=True)
     genre = models.ForeignKey('Genre', blank=True, null=True)
-    source = models.ForeignKey('Source', blank=True, null=True)
 
     def __unicode__(self):
         return self.name
 
     @staticmethod
-    def exists(name, subname, language, year, genre, source):
-        return Movie.objects.filter(name=name, subname=subname, language=language, year=year, genre=genre, source=source).count() > 0
+    def exists(name, subname, year, genre):
+        return Movie.objects.filter(name=name, subname=subname, year=year, genre=genre).count() > 0
 
     @staticmethod
-    def getOrCreate(name, subname, language, year, genre, source, size=None):
-        movie = Movie.objects.filter(name=name, subname=subname, language=language, year=year, genre=genre, source=source)
+    def getOrCreate(name, subname=None, year=None, genre=None, size=None):
+        movie = Movie.objects.filter(name=name, subname=subname, year=year, genre=genre)
         if len(movie) > 0:
             movie = movie[0]
         else:
-            movie = Movie(name=name, subname=subname, language=language, year=year, genre=genre, source=source)
+            movie = Movie(name=name, subname=subname, year=year, genre=genre)
             movie.save()
         return movie
 
     def toDict(self):
         d = {'id'   : self.id,
-             'name' : self.name,
-             'size' : self.size}
+             'name' : self.name}
         if self.subname:
             d.update({'subname' : self.subname})
-        if self.language:
-            d.update({'language' : self.language.name})
         if self.year:
             d.update({'year' : self.year})
         if self.genre:
             d.update({'genre' : self.genre.name})
-        if self.source:
-            d.update({'source' : self.source.name})
         return d
+
+class ItemInstance(models.Model):
+    creator = models.ForeignKey(User, blank=True, null=True)
+    item = models.ForeignKey('Item')
+    language = models.ForeignKey('Language', blank=True, null=True)
+    source = models.ForeignKey('Source', blank=True, null=True)
+    path = models.CharField(max_length=1024, blank=True, null=True)
+    present = models.BooleanField(default=False)
+    size = models.IntegerField(blank=True, null=True)
+    mtime = models.IntegerField(blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __unicode__(self):
+        return "<ItemInstance '%s' in '%s;%s'>" % (self.item.name, str(self.language), str(self.source))
+
+    def getDownloadFileGroups(self):
+        return DownloadFileGroup.objects.filter(itemInstance=self)
+
+    def getUploadRequest(self):
+        uploadRequest = None
+        try:
+            uploadRequest = UploadRequest.objects.filter(itemInstance=self)
+        except UploadRequest.DoesNotExist:
+            pass
+        return uploadRequest
+
+    def isPathAvailable(self):
+        return self.path != None and os.path.exists(self.path)
+
+    def getSizeString(self):
+        sizeString = "Unknown"
+        size = self.size
+        if size:
+            s = (size, 'byte')
+            if size > 1073741824:
+                s = (round(size/1073741824.0, 2), 'GB')
+            elif size > 1048576:
+                s = (round(size/1048576.0, 2), 'MB')
+            elif size > 1024:
+                s = (round(size/1024.0, 2), 'KB')
+            sizeString = "%.2f %s" % s
+        return sizeString
+
+
+    def toDict(self):
+        d = self.item.toDict()
+        if self.language:
+            d['language'] = self.language.name
+        if self.source:
+            d['source'] = self.source.name
+        if self.size:
+            d['size'] = self.size
+        return d
+
+    @staticmethod
+    def getOrCreate(item, language=None, source=None, size=None, creator=None):
+        itemInstance = ItemInstance.objects.filter(item=item, language=language,
+                                                   source=source, size=size,
+                                                   creator=creator)
+        if len(itemInstance) > 0:
+            itemInstance = itemInstance[0]
+        else:
+            itemInstance = ItemInstance(item=item, language=language,
+                                        source=source, size=size,
+                                        creator=creator)
+            itemInstance.save()
+        return itemInstance
+
 
 class ItemRequest(models.Model):
     requester = models.ForeignKey(User)
-    item = models.ForeignKey('Item')
+    itemInstance = models.ForeignKey('ItemInstance')
     processed = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
         return "%s %s (%s)" % (str(self.requester),
-                               str(self.item),
+                               str(self.itemInstance),
                                "processed" if self.processed else "not processed")
 
 class UploadRequest(models.Model):
     user = models.ForeignKey(User)
-    item = models.ForeignKey('Item')
+    itemInstance = models.ForeignKey('ItemInstance')
     state = models.IntegerField(default=0)
     tries = models.IntegerField(default=0)
     done = models.BooleanField(default=False)
@@ -222,7 +295,7 @@ class UploadRequest(models.Model):
     uploaded = models.IntegerField(default=0)
 
     def __unicode__(self):
-        return 'UploadRequest: %s %s' % (self.item, 'done' if self.done else 'not done')
+        return 'UploadRequest: %s %s' % (self.itemInstance, 'done' if self.done else 'not done')
 
 class Comment(models.Model):
     user = models.ForeignKey(User)

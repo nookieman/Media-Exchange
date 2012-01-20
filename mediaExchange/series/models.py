@@ -15,7 +15,7 @@ class Serie(models.Model):
         if len(serie) > 0:
             serie = serie[0]
         else:
-            serie = Serie(name)
+            serie = Serie(name=name)
             serie.save()
         return serie
 
@@ -24,9 +24,7 @@ class Season(Item):
     serie = models.ForeignKey('Serie')
     subname = models.CharField(max_length=256, blank=True, null=True)
     number = models.IntegerField(blank=False, null=False)
-    language = models.ForeignKey(get_model('movies', 'Language'), blank=True, null=True)
     genre = models.ForeignKey(get_model('movies', 'Genre'), blank=True, null=True)
-    source = models.ForeignKey(get_model('movies', 'Source'), blank=True, null=True)
     year = models.IntegerField(blank=True, null=True)
     directoryListing = models.TextField(blank=True, null=True)
 
@@ -34,30 +32,25 @@ class Season(Item):
         return "%s S%d" % (self.serie.name, self.number)
 
     @staticmethod
-    def getOrCreate(serie, subname, number, language, genre, source, year, size=None):
-        season = Season.objects.filter(serie=serie, subname=subname, number=number, language=language, genre=genre, source=source, year=year)
+    def getOrCreate(serie, number, subname=None, genre=None, year=None):
+        season = Season.objects.filter(serie=serie, subname=subname, number=number, genre=genre, year=year)
         if len(season) > 0:
             season = season[0]
         else:
-            season = Season(serie=serie, subname=subname, number=number, language=language, genre=genre, source=source, year=year)
+            season = Season(serie=serie, subname=subname, number=number, genre=genre, year=year)
             season.save()
         return season
 
     def toDict(self):
         d = {'id'     : self.id,
              'name'   : self.serie.name,
-             'size'   : self.size,
              'number' : self.number}
         if self.subname:
-            d.update({'subname' : self.subname})
-        if self.language:
-            d.update({'language' : self.language.name})
+            d['subname'] = self.subname
         if self.year:
-            d.update({'year' : self.year})
+            d['year'] = self.year
         if self.genre:
-            d.update({'genre' : self.genre.name})
-        if self.source:
-            d.update({'source' : self.source.name})
+            d['genre'] = self.genre.name
         return d
 
 # keep this if decide to make single episodes available
