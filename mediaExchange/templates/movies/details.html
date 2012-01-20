@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<h1> {{ movie.name|escape }} </h1>
+<h1>{{ movie.name|escape }}</h1>
 
 {% if movie.subname %}
 <h2>{{movie.subname|escape }}</h2>
@@ -29,7 +29,7 @@
 <div>Source: {{ itemInstance.source|escape }}</div>
 {% endif %}
 
-{% if movie.language %}
+{% if itemInstance.language %}
 <div>Language: {{ itemInstance.language|escape }}</div>
 {% endif %}
 
