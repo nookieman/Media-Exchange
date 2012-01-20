@@ -72,69 +72,66 @@ def handleMovie(request):
     error = None
     form = MovieUploadForm(request.POST, request.FILES)
     if form.is_valid():
-        if not movieExists(form):
-            try:
-                language = Language.getOrCreate(form.cleaned_data['language'])
-                genre = Genre.getOrCreate(form.cleaned_data['genre'])
-                source = Source.getOrCreate(form.cleaned_data['source'])
+        language = Language.getOrCreate(form.cleaned_data['language'])
+        genre = Genre.getOrCreate(form.cleaned_data['genre'])
+        source = Source.getOrCreate(form.cleaned_data['source'])
 
-                subname = None
-                if form.cleaned_data['subname']:
-                    subname = form.cleaned_data['subname']
+        subname = None
+        if form.cleaned_data['subname']:
+            subname = form.cleaned_data['subname']
 
-                year = None
-                if form.cleaned_data['year']:
-                    year = form.cleaned_data['year']
+        year = None
+        if form.cleaned_data['year']:
+            year = form.cleaned_data['year']
 
-                filesize = None
-                if form.cleaned_data['size']:
-                    filesize = form.cleaned_data['size']
+        filesize = None
+        if form.cleaned_data['size']:
+            filesize = form.cleaned_data['size']
 
-                m = Movie(name=form.cleaned_data['name'], size=filesize,
-                          subname=subname, year=year, genre=genre)
-                m.save()
-                itemInstance = ItemInstance(size=filesize, language=language,
-                                            source=source, present=False,
-                                            creator=request.user, item=m)
-                itemInstance.save()
-                if form.cleaned_data['file']:
-                    itemInstance.path = generateDestinationPath(form)
-                    if form.cleaned_data['tar']:
-                        tf = tarfile.open(fileobj=form.cleaned_data['file'])
-                        tf.extractall(path=path)
-                    else:
-                        destination = open(path+os.path.basename(form.cleaned_data['file'].name), 'wb+')
-                        for chunk in form.cleaned_data['file'].chunks():
-                            destination.write(chunk)
-                        destination.close()
-                    itemInstance.size = form.cleaned_data['file'].size
-                    itemInstance.mtime = int(os.stat(path).st_mtime)
-                    itemInstance.present = True
-                    itemInstance.save()
-                    form = None
-                    error = 'Thank you for contributing.'
-                elif (form.cleaned_data['dlLinks'] or form.cleaned_data['dlLinksFile']) and form.cleaned_data['keyfile']:
-                    dlUrls = []
-                    if form.cleaned_data['dlLinks']:
-                        dlUrls = [ url.strip() for url in form.cleaned_data['dlLinks'].split(',')]
-                    else:
-                        dlUrls = [ url.strip() for url in form.cleaned_data['dlLinksFile'] ]
-                    if len(dlUrls) > 0:
-                        key = EncryptionKey.fromFileHandle(form.cleaned_data['keyfile'])
-                        downloadFileGroup = DownloadFileGroup(item=itemInstance, key=key)
-                        downloadFileGroup.save()
-                        for url in dlUrls:
-                            df = DownloadFile(downloadFileGroup=downloadFileGroup, downloadLink=url)
-                            df.save()
-                    form = None
-                    error = 'Thank you for contributing.'
+        try:
+            m = Movie(name=form.cleaned_data['name'], subname=subname,
+                      year=year, genre=genre)
+            m.save()
+            itemInstance = ItemInstance(size=filesize, language=language,
+                                        source=source, present=False,
+                                        creator=request.user, item=m)
+            itemInstance.save()
+            if form.cleaned_data['file']:
+                itemInstance.path = generateDestinationPath(form)
+                if form.cleaned_data['tar']:
+                    tf = tarfile.open(fileobj=form.cleaned_data['file'])
+                    tf.extractall(path=path)
                 else:
-                    form = None
-                    error = "Thank you for enlisting your item. You will be contacted when someone requests this item."
-            except Exception, e:
-                error = 'Having an error: %s' % (e)
-        else:
-            error = 'The movie already exists.'
+                    destination = open(path+os.path.basename(form.cleaned_data['file'].name), 'wb+')
+                    for chunk in form.cleaned_data['file'].chunks():
+                        destination.write(chunk)
+                    destination.close()
+                itemInstance.size = form.cleaned_data['file'].size
+                itemInstance.mtime = int(os.stat(path).st_mtime)
+                itemInstance.present = True
+                itemInstance.save()
+                form = None
+                error = 'Thank you for contributing.'
+            elif (form.cleaned_data['dlLinks'] or form.cleaned_data['dlLinksFile']) and form.cleaned_data['keyfile']:
+                dlUrls = []
+                if form.cleaned_data['dlLinks']:
+                    dlUrls = [ url.strip() for url in form.cleaned_data['dlLinks'].split(',')]
+                else:
+                    dlUrls = [ url.strip() for url in form.cleaned_data['dlLinksFile'] ]
+                if len(dlUrls) > 0:
+                    key = EncryptionKey.fromFileHandle(form.cleaned_data['keyfile'])
+                    downloadFileGroup = DownloadFileGroup(itemInstance=itemInstance, key=key)
+                    downloadFileGroup.save()
+                    for url in dlUrls:
+                        df = DownloadFile(downloadFileGroup=downloadFileGroup, downloadLink=url)
+                        df.save()
+                form = None
+                error = 'Thank you for contributing.'
+            else:
+                form = None
+                error = "Thank you for enlisting your item. You will be contacted when someone requests this item."
+        except Exception, e:
+            error = 'Having an error: %s' % (e)
     else:
         error = 'invalid MovieUploadForm'
     return form, error
@@ -143,82 +140,77 @@ def handleSerie(request):
     error = None
     form = SeriesUploadForm(request.POST, request.FILES)
     if form.is_valid():
-        serieCreated = False
-        if not serieExists(form):
-            createSerie(form.cleaned_data['name'])
-            serieCreated = True
-        serie = Serie.objects.filter(name=form.cleaned_data['name'])[0]
-        if not seasonExists(serie, form):
-            try:
-                language = Language.getOrCreate(form.cleaned_data['language'])
-                genre = Genre.getOrCreate(form.cleaned_data['genre'])
-                source = Source.getOrCreate(form.cleaned_data['source'])
+        serie = Serie.getOrCreate(form.cleaned_data['name'])
+        language = Language.getOrCreate(form.cleaned_data['language'])
+        genre = Genre.getOrCreate(form.cleaned_data['genre'])
+        source = Source.getOrCreate(form.cleaned_data['source'])
 
-                number = None
-                if form.cleaned_data['number']:
-                    number = form.cleaned_data['number']
+        number = None
+        if form.cleaned_data['number']:
+            number = form.cleaned_data['number']
 
-                subname = None
-                if form.cleaned_data['subname']:
-                    subname = form.cleaned_data['subname']
+        subname = None
+        if form.cleaned_data['subname']:
+            subname = form.cleaned_data['subname']
 
-                year = None
-                if form.cleaned_data['year']:
-                    year = form.cleaned_data['year']
+        year = None
+        if form.cleaned_data['year']:
+            year = form.cleaned_data['year']
 
-                filesize = None
-                if form.cleaned_data['size']:
-                    filesize = form.cleaned_data['size']
+        filesize = None
+        if form.cleaned_data['size']:
+            filesize = form.cleaned_data['size']
 
-                season = Season.getOrCreate(serie=serie, size=filesize,
-                                            subname=subname, number=number,
-                                            language=language, year=year,
-                                            genre=genre, source=source,
-                                            present=False, creator=request.user)
-                season.save()
-                itemInstance = ItemInstance(size=filesize, language=language,
-                                            source=source, present=False,
-                                            creator=requests.user, item=season)
-                itemInstance.save()
+        try:
+            season = Season.getOrCreate(serie=serie, subname=subname,
+                                        number=number, language=language,
+                                        year=year, genre=genre, source=source,
+                                        present=False, creator=request.user)
+            season.save()
+            itemInstance = ItemInstance.getOrCreate(size=filesize,
+                                                    language=language,
+                                                    source=source,
+                                                    present=False,
+                                                    creator=requests.user,
+                                                    item=season)
+            itemInstance.save()
 
-                if form.cleaned_data['file']:
-                    itemInstance.path = generateDestinationPath(form)
-                    if form.cleaned_data['tar']:
-                        tf = tarfile.open(fileobj=form.cleaned_data['file'])
-                        tf.extractall(path=path)
-                    else:
-                        destination = open(path+os.path.basename(form.cleaned_data['file'].name), 'wb+')
-                        for chunk in form.cleaned_data['file'].chunks():
-                            destination.write(chunk)
-                        destination.close()
-                    itemInstance.filesize = form.cleaned_data['file'].size
-                    itemInstance.mtime = int(os.stat(path).st_mtime)
-                    itemInstance.present = True
-                    itemInstance.save()
-                    form = None
-                    error = 'Thank you for contributing.'
-                elif (form.cleaned_data['dlLinks'] or form.cleaned_data['dlLinksFile']) and form.cleaned_data['keyfile']:
-                    dlUrls = []
-                    if form.cleaned_data['dlLinks']:
-                        dlUrls = [ url.strip() for url in form.cleaned_data['dlLinks'].split(',')]
-                    else:
-                        dlUrls = [ url.strip() for url in form.cleaned_data['dlLinksFile'] ]
-                    if len(dlUrls) > 0:
-                        key = EncryptionKey.fromFileHandle(form.cleaned_data['keyfile'])
-                        downloadFileGroup = DownloadFileGroup(itemInstance=itemInstance, key=key)
-                        downloadFileGroup.save()
-                        for url in dlUrls:
-                            df = DownloadFile(downloadFileGroup=downloadFileGroup, downloadLink=url)
-                            df.save()
-                    form = None
-                    error = 'Thank you for contributing.'
+            if form.cleaned_data['file']:
+                itemInstance.path = generateDestinationPath(form)
+                if form.cleaned_data['tar']:
+                    tf = tarfile.open(fileobj=form.cleaned_data['file'])
+                    tf.extractall(path=path)
                 else:
-                    form = None
-                    error = "Thank you for enlisting your item. You will be contacted when someone requests this item."
-            except Exception, e:
-                error = 'Having an error: %s' % str(e)
-        else:
-            error = 'The season already exists.'
+                    destination = open(path+os.path.basename(form.cleaned_data['file'].name), 'wb+')
+                    for chunk in form.cleaned_data['file'].chunks():
+                        destination.write(chunk)
+                    destination.close()
+                itemInstance.filesize = form.cleaned_data['file'].size
+                itemInstance.mtime = int(os.stat(path).st_mtime)
+                itemInstance.present = True
+                itemInstance.save()
+                form = None
+                error = 'Thank you for contributing.'
+            elif (form.cleaned_data['dlLinks'] or form.cleaned_data['dlLinksFile']) and form.cleaned_data['keyfile']:
+                dlUrls = []
+                if form.cleaned_data['dlLinks']:
+                    dlUrls = [ url.strip() for url in form.cleaned_data['dlLinks'].split(',')]
+                else:
+                    dlUrls = [ url.strip() for url in form.cleaned_data['dlLinksFile'] ]
+                if len(dlUrls) > 0:
+                    key = EncryptionKey.fromFileHandle(form.cleaned_data['keyfile'])
+                    downloadFileGroup = DownloadFileGroup(itemInstance=itemInstance, key=key)
+                    downloadFileGroup.save()
+                    for url in dlUrls:
+                        df = DownloadFile(downloadFileGroup=downloadFileGroup, downloadLink=url)
+                        df.save()
+                form = None
+                error = 'Thank you for contributing.'
+            else:
+                form = None
+                error = "Thank you for enlisting your item. You will be contacted when someone requests this item."
+        except Exception, e:
+            error = 'Having an error: %s' % str(e)
     else:
         error = 'invalid SeriesUploadForm'
     return form, error
