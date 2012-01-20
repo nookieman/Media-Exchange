@@ -28,15 +28,15 @@ def seriesseasondetails(request, season_id):
     return getSeasonDetails(request, season)
 
 @login_required
-def seriesseasoncreate(request, season_id):
+def seriesseasoncreate(request, item_instance_id):
     print 'create called'
-    season = get_object_or_404(Season, pk=season_id)
-    if not DownloadFileGroup.objects.filter(item=season):
-        ur = UploadRequest.objects.filter(item=season)
+    itemInstance = get_object_or_404(ItemInstance, pk=item_instance_id)
+    if not DownloadFileGroup.objects.filter(itemInstance=itemInstance):
+        ur = UploadRequest.objects.filter(itemInstance=itemInstance)
         if not ur:
-            ur = UploadRequest(item=season, user=request.user)
+            ur = UploadRequest(itemInstance=itemInstance, user=request.user)
             ur.save()
-    return getSeasonDetails(request, season)
+    return getSeasonDetails(request, itemInstance.item.getRealModel())
 
 def getSerieDetails(serie):
     seasons = Season.objects.filter(serie=serie)
@@ -59,28 +59,29 @@ def getSeasonDetails(request, season, message=None):
     return render_to_response('series/seasondetails.html', c)
 
 @login_required
-def seriesseasonrequest(request, season_id):
+def seriesseasonrequest(request, item_instance_id):
     c = {}
-    season = get_object_or_404(Season, pk=season_id)
-    if season.creator:
-        msg = sendSeasonRequestMail(season, request.user)
+    itemInstance = get_object_or_404(ItemInstance, pk=item_instance_id)
+    if itemInstance.creator:
+        msg = sendSeasonRequestMail(itemInstance, request.user)
         if not msg:
-            itemRequest(requester=request.user, item=season).save()
+            itemRequest(requester=request.user, itemInstance=itemInstance).save()
             msg = "The contributor received a message of your request."
     else:
         msg = "Sorry the contributor of this item is unknown."
-    return getSeasonDetails(request, season, msg)
+    return getSeasonDetails(request, itemInstance.item.getRealModel(), msg)
 
 @login_required
 @csrf_protect
-def seriesseasonaddlinks(request, season_id):
+def seriesseasonaddlinks(request, item_instance_id):
     c = {}
-    season = get_object_or_404(Season, pk=season_id)
+    itemInstance = get_object_or_404(ItemInstance, pk=item_instance_id)
     form = AddItemUploadForm(request.POST, request.FILES)
-    msg = addLinks(item=season, form=form)
-    return getSeasonDetails(request, season, msg)
+    msg = addLinks(itemInstance=itemInstance, form=form)
+    return getSeasonDetails(request, itemInstance.item.getRealModel(), msg)
 
-def sendSeasonRequestMail(season, requester):
+def sendSeasonRequestMail(itemInstance, requester):
+    season = itemInstance.item.getRealModel()
     subject = "Request for series '%s' season %d from '%s'" % (season.series.name,
                                                              season.number,
                                                              str(requester))
@@ -89,6 +90,6 @@ def sendSeasonRequestMail(season, requester):
                                                          season.number)
     if season.subname:
         body += " (%s)" % season.subname
-    if season.source:
-        body += "in %s" % season.source.name
-    return sendMail([season.creator.mail], subject, body)
+    if itemInstance.source:
+        body += "in %s" % itemInstance.source.name
+    return sendMail([itemInstance.creator.mail], subject, body)
