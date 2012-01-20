@@ -6,7 +6,7 @@ import re
 import sys
 from ConfigParser import SafeConfigParser
 
-from mediaExchange.movies.models import Movie, Source, Language
+from mediaExchange.movies.models import Movie, Source, Language, ItemInstance
 from mediaExchange.series.models import Serie, Season
 
 def addMovies(directory):
@@ -21,30 +21,27 @@ def addMovies(directory):
             if match:
                 movieDict = inforegex.match(dirname).groupdict()
                 mmtime = int(os.stat(mpath).st_mtime)
-                msource = None
                 msource = Source.getOrCreate(movieDict.get('source', None))
-                rm = Movie.objects.filter(name=movieDict['name'],
+                movie = Movie.getOrCreate(name=movieDict['name'],
                                           subname=movieDict.get('subname', None),
                                           year=movieDict.get('year', None))
-                if rm:
-                    rm = rm[0]
-                    if rm.mtime < mmtime:
-                        rm.path = mpath
-                        rm.mtime = mmtime
-                        rm.size = getDirSize(mpath)
-                        rm.save()
-                else:
+                try:
+                    itemInstance = ItemInstance.objects.get(path=mpath)
+                    if itemInstance.mtime < mmtime:
+                        itemInstance.path = mpath
+                        itemInstance.mtime = mmtime
+                        itemInstance.size = getDirSize(mpath)
+                        itemInstance.save()
+                except ItemInstance.DoesNotExist:
                     msize = getDirSize(mpath)
                     print movieDict
-                    m = Movie(name=movieDict['name'],
-                              subname=movieDict.get('subname', None),
-                              year=movieDict.get('year', None),
+                    itemInstance = ItemInstance(item=movie,
                               path=mpath,
                               source=msource,
                               mtime=mmtime,
                               size=msize,
                               present=True)
-                    m.save()
+                    itemInstance.save()
             else:
                 print "WARNING: invalid movie directory format '%s'" % dirname
     else:
@@ -68,37 +65,40 @@ def addSeries(directory):
                             seasonNumber = seasonDict['number']
                             ssubname = seasonDict.get('subtitle', None)
                             syear = seasonDict.get('year', None)
-                            ssource = seasonDict.get('source', None)
-                            slanguage = seasonDict.get('language', None)
                             seasonPath = directory + '/' + serieDirName + '/' + seasonDirName
-                            try:
-                                serie = Serie.objects.get(name=serieName)
-                            except Serie.DoesNotExist, e:
-                                serie = Serie(name=serieName)
-                                serie.save()
+                            serie = Serie.getOrCreate(name=serieName)
                             smtime = int(os.stat(seasonPath).st_mtime)
-                            if ssource:
-                                ssource = Source.getOrCreate(ssource)
-                            if slanguage:
-                                slanguage = Language.getOrCreate(ssource)
+                            ssource = Source.getOrCreate(name=seasonDict.get('source', None))
+                            slanguage = Language.getOrCreate(name=seasonDict.get('language', None))
                             directoryListing = ""
                             dirlist = os.listdir(seasonPath)
                             dirlist.sort()
                             for d in dirlist:
                                 directoryListing += "%s\n" % d
                             directoryListing = directoryListing[:-1]
+                            season = Season.getOrCreate(serie=serie,
+                                                        number=seasonNumber,
+                                                        subname=ssubname,
+                                                        year=syear)
                             try:
-                                season = Season.objects.get(serie=serie, number=seasonNumber, subname=ssubname, year=syear, language=slanguage, source=ssource)
-                                if season.mtime < smtime:
-                                    season.path = seasonPath
-                                    season.mtime = smtime
-                                    season.size = getDirSize(seasonPath)
-                                    season.save()
-                            except Season.DoesNotExist, e:
+                                itemInstance = ItemInstance.objects.get(path=seasonPath)
+                                if itemInstance.mtime < smtime:
+                                    itemInstance.path = seasonPath
+                                    itemInstance.mtime = smtime
+                                    itemInstance.size = getDirSize(seasonPath)
+                                    itemInstance.save()
+                            except ItemInstance.DoesNotExist:
                                 ssize = getDirSize(seasonPath)
                                 print (serieName, seasonNumber, ssubname, syear, ssource, ssize)
-                                season = Season(serie=serie, number=seasonNumber, subname=ssubname, path=seasonPath, year=syear, source=ssource, language=slanguage, mtime=smtime, size=ssize, directoryListing=directoryListing, present=True)
-                                season.save()
+                                itemInstance = ItemInstance(item=season,
+                                                            path=seasonPath,
+                                                            source=ssource,
+                                                            language=slanguage,
+                                                            mtime=smtime,
+                                                            size=ssize,
+#                                                            directoryListing=directoryListing,
+                                                            present=True)
+                                itemInstance.save()
                         else:
                             print "WARNING: invalid season directory format '%s'" % seasonDirName
                     else:
