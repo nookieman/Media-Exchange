@@ -43,8 +43,11 @@ class DownloadFile(models.Model):
 class Item(models.Model):
     name = models.CharField(max_length=256)
 
+    def __repr__(self):
+        return self.__unicode__()
+
     def __unicode__(self):
-        return "<Item '%s'>" % (self.name)
+        return self.getRealModel().__unicode__()
 
     def getRealModel(self):
         realModel = None
@@ -215,8 +218,11 @@ class ItemInstance(models.Model):
     mtime = models.IntegerField(blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    def __repr__(self):
+        return self.__unicode__()
+
     def __unicode__(self):
-        return "<ItemInstance '%s' in '%s;%s'>" % (self.item.name, str(self.language), str(self.source))
+        return "<ItemInstance '%s' in '%s;%s'>" % (str(self.item), str(self.language), str(self.source))
 
     def getDownloadFileGroups(self):
         return DownloadFileGroup.objects.filter(itemInstance=self)
