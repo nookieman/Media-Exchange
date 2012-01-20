@@ -54,40 +54,38 @@
     {% endfor %}
 
     {% if itemInstance.getUploadRequest %}
-        {% if uploadRequest %}
-    Already requested. The file is now <span name="itemState{{ uploadRequest.itemInstance.id }}">
-            {% ifequal uploadRequest.state 0 %}
-    queued
-            {% endifequal %}
-            {% ifequal uploadRequest.state 1 %}
-    taring ({{ uploadRequest.tared  }}%)
-            {% endifequal %}
-            {% ifequal uploadRequest.state 2 %}
-    encrypting ({{ uploadRequest.encrypted  }}%)
-            {% endifequal %}
-            {% ifequal uploadRequest.state 3 %}
-    splitting ({{ uploadRequest.splitted }}%)
-            {% endifequal %}
-            {% ifequal uploadRequest.state 4 %}
-    uploading ({{ uploadRequest.uploaded  }}%)
-            {% endifequal %}
-            </span>.
+Already requested. The file is now <span name="itemState{{ uploadRequest.itemInstance.id }}">
+        {% ifequal uploadRequest.state 0 %}
+queued
+        {% endifequal %}
+        {% ifequal uploadRequest.state 1 %}
+taring ({{ uploadRequest.tared  }}%)
+        {% endifequal %}
+        {% ifequal uploadRequest.state 2 %}
+encrypting ({{ uploadRequest.encrypted  }}%)
+        {% endifequal %}
+        {% ifequal uploadRequest.state 3 %}
+splitting ({{ uploadRequest.splitted }}%)
+        {% endifequal %}
+        {% ifequal uploadRequest.state 4 %}
+uploading ({{ uploadRequest.uploaded  }}%)
+        {% endifequal %}
+        </span>.
 
-        {% else %}
-            {% if not downloadFileGroups %}
-                {% if itemInstance.present %}
-                    {% if itemInstance.isPathAvailable %}
-    <a href="/movies/create/{{ itemInstance.id }}/">Create Download</a>
-                    {% else %}
-    The files are currently not available, but you can create a request, that will be served later, when the files are available again <a href="/movies/create/{{ itemInstance.id }}/">here</a>.
-                    {% endif %}
+    {% else %}
+        {% if not downloadFileGroups %}
+            {% if itemInstance.present %}
+                {% if itemInstance.isPathAvailable %}
+<a href="/movies/create/{{ itemInstance.id }}/">Create Download</a>
                 {% else %}
-    Sorry, the files are not locally available and therefore no download links can be created.
-                    {% if itemInstance.creator %}
-    <a href="/movies/request/{{ itemInstance.id }}">Request upload of the movie.</a>
-                    {% endif %}
-                {% endif%}
-            {% endif %}
+The files are currently not available, but you can create a request, that will be served later, when the files are available again <a href="/movies/create/{{ itemInstance.id }}/">here</a>.
+                {% endif %}
+            {% else %}
+Sorry, the files are not locally available and therefore no download links can be created.
+                {% if itemInstance.creator %}
+<a href="/movies/request/{{ itemInstance.id }}">Request upload of the movie.</a>
+                {% endif %}
+            {% endif%}
         {% endif %}
     {% endif %}
 </fieldset>
