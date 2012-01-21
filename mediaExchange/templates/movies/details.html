@@ -88,6 +88,21 @@ Sorry, the files are not locally available and therefore no download links can b
             {% endif%}
         {% endif %}
     {% endif %}
+
+    <div>
+        <input id="adddownloadlinksbutton{{itemInstance.id}}" type="button" onclick="$('adddownloadlinks{{itemInstance.id}}').toggle();$('adddownloadlinksbutton{{itemInstance.id}}').toggle();" value="Add download links" />
+        <form action="/movies/addlinks/{{ itemInstance.id }}/" enctype="multipart/form-data" method="POST">{% csrf_token %}
+            <fieldset id="adddownloadlinks{{itemInstance.id}}" style="display:none;">
+                <legend>
+                    <input id="adddownloadlinksbutton{{itemInstance.id}}" type="button" onclick="$('adddownloadlinks{{itemInstance.id}}').toggle();$('adddownloadlinksbutton{{itemInstance.id}}').toggle();" value="Add download links" />
+                </legend>
+                <table>
+                    {{ addItemForm }}
+                    <tr><td><input type="submit" /></td></tr>
+                </table>
+            </fieldset>
+        </form>
+    </div>
 </fieldset>
 {% endfor %}
 
@@ -174,17 +189,5 @@ Sorry, the files are not locally available and therefore no download links can b
         </table>
     </form>
 </fieldset>
-
-<div>
-    <form action="/movies/addlinks/{{ movie.id }}/" enctype="multipart/form-data" method="POST">{% csrf_token %}
-        <fieldset>
-            <legend>Add download links:</legend>
-            <table>
-                {{ addItemForm }}
-                <tr><td><input type="submit" /></td></tr>
-            </table>
-        </fieldset>
-    </form>
-</div>
 
 {% endblock %}
