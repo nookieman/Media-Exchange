@@ -26,11 +26,11 @@ def usersregistration(request):
                     salt = sha1(str(random.random())).hexdigest()[:5]
                     activation_key = sha1(salt+new_user.username).hexdigest()
                     key_expires = datetime.datetime.today() + datetime.timedelta(3)
-                    
+
                     # Create and save their profile
                     new_profile = UserProfile(user=new_user, activation_key=activation_key, key_expires=key_expires)
                     new_profile.save()
-                    
+
                     # Send an email with the confirmation link
 
                     c.update({'error':'Thank you for registering.'})
