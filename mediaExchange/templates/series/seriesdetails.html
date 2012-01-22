@@ -7,7 +7,7 @@
 <ul>
 {% for season in seasons %}
     <li>
-        <a href="/series/season/{{ season.id }}">
+        <a href="/items/{{ season.id }}/">
             Season {{ season.number|escape }}{% if season.subname %} ({{ season.subname|escape }}){% endif %}
         </a>
         {% for dur in doneUploadRequests %}

@@ -7,7 +7,7 @@
 <ul>
 {% for movie in movies %}
     <li>
-        <a href="/movies/details/{{ movie.id }}/">
+        <a href="/items/{{ movie.id }}/">
             {{ movie.name|escape }}
             {% if movie.subname %} - {{ movie.subname|escape }}{% endif %}
             {% if movie.year %} ({{ movie.year|escape }}){% endif %}
@@ -33,7 +33,7 @@
             {{ season.serie.name|escape }}
         </a>
         :
-        <a href="/series/season/{{ season.id }}/">
+        <a href="/items/{{ season.id }}/">
             Season {{ season.number|escape }}
             {% if season.subname %} - {{ season.subname|escape }}{% endif %}
             {% if season.year %} ({{ season.year|escape }}){% endif %}

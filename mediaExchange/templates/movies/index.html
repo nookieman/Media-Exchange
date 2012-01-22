@@ -7,7 +7,7 @@
 <ul>
 {% for movie in movies %}
     <li>
-        <a href="/movies/details/{{ movie.id }}/">
+        <a href="/items/{{ movie.id }}/">
             {{ movie.name|escape }}{% if movie.subname %} - {{ movie.subname|escape }}{% endif %}
         </a>
         {% for dur in doneUploadRequests %}
