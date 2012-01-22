@@ -1,11 +1,7 @@
 from django.contrib.auth.decorators import login_required
-from django.core.context_processors import csrf
 from django.shortcuts import render_to_response, get_object_or_404
-from django.views.decorators.csrf import csrf_protect
 
-from mediaExchange.items.forms import AddItemUploadForm
-from mediaExchange.items.models import DownloadFileGroup, ItemInstance, ItemRequest, Serie, Season, UploadRequest
-from mediaExchange.items.views import sendMail
+from mediaExchange.items.models import Serie, Season, UploadRequest
 
 
 @login_required
