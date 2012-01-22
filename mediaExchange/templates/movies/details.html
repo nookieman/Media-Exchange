@@ -20,6 +20,15 @@
 
 <br />
 
+{% if message %}
+    <div>
+        <fieldset>
+            <legend>Message:</legend>
+            {{ message|escape }}
+        </fieldset>
+    </div>
+{% endif %}
+
 
 <div>Downloads:
 {% for itemInstance in itemInstances %}
@@ -105,15 +114,6 @@ Sorry, the files are not locally available and therefore no download links can b
     </div>
 </fieldset>
 {% endfor %}
-
-{% if message %}
-    <div>
-        <fieldset>
-            <legend>Message:</legend>
-            {{ message|escape }}
-        </fieldset>
-    </div>
-{% endif %}
 
 </div>
 {% if wvotes %}
