@@ -6,7 +6,7 @@ from django.shortcuts import render_to_response
 from django.views.decorators.csrf import csrf_protect
 
 from mediaExchange.importer.forms import ImportForm
-from mediaExchange.movies.models import Item, UploadRequest
+from mediaExchange.items.models import Item, UploadRequest
 
 @login_required
 @csrf_protect

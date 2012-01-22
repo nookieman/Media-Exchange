@@ -9,8 +9,7 @@ from django.core.context_processors import csrf
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from mediaExchange.settings import MOVIE_SAVE_DIRECTORY
-from mediaExchange.movies.models import Movie, Language, Genre, Source, UploadRequest, EncryptionKey, DownloadFile, DownloadFileGroup, ItemInstance
-from mediaExchange.series.models import Serie, Season
+from mediaExchange.items.models import Language, Genre, Source, UploadRequest, EncryptionKey, DownloadFile, DownloadFileGroup, ItemInstance, Movie, Serie, Season
 from mediaExchange.mediaUpload.forms import UploadForm, MovieUploadForm, SeriesUploadForm
 from mediaExchange.mediaUpload.handlers import ProgressUploadHandler
 

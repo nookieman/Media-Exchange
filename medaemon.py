@@ -3,7 +3,7 @@
 from MultiUpload import MultiUpload
 from meuploader import *
 
-from mediaExchange.movies.models import UploadRequest, DownloadFile, DownloadFileGroup, EncryptionKey
+from mediaExchange.items.models import UploadRequest, DownloadFile, DownloadFileGroup, EncryptionKey
 
 from mediaExchange.settings import ENCRYPTION_KEY, ENCRYPTION_CHUNK_SIZE
 

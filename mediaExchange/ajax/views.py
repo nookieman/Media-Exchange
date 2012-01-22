@@ -2,8 +2,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response, get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 
+from mediaExchange.items.models import Item, UploadRequest
 from mediaExchange.movies.forms import RatingForm
-from mediaExchange.movies.models import Item, UploadRequest
 
 import time
 

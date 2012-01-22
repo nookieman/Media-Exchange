@@ -6,8 +6,7 @@ import re
 import sys
 from ConfigParser import SafeConfigParser
 
-from mediaExchange.movies.models import Movie, Source, Language, ItemInstance
-from mediaExchange.series.models import Serie, Season
+from mediaExchange.items.models import Source, Language, ItemInstance, Movie, Serie, Season
 
 def addMovies(directory):
     #TODO check if still working with named groups

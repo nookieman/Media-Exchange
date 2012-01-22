@@ -4,8 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 
-from mediaExchange.movies.models import Movie, UploadRequest, DownloadFileGroup, DownloadFile, EncryptionKey, ItemInstance
-from mediaExchange.series.models import Season
+from mediaExchange.items.models import UploadRequest, DownloadFileGroup, DownloadFile, EncryptionKey, ItemInstance, Movie, Season
 
 @login_required
 def exporterexport(request):

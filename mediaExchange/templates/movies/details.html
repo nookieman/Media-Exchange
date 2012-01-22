@@ -76,14 +76,14 @@ uploading ({{ uploadRequest.uploaded  }}%)
         {% if not downloadFileGroups %}
             {% if itemInstance.present %}
                 {% if itemInstance.isPathAvailable %}
-<a href="/movies/create/{{ itemInstance.id }}/">Create Download</a>
+<a href="/items/create/{{ itemInstance.id }}/">Create Download</a>
                 {% else %}
-The files are currently not available, but you can create a request, that will be served later, when the files are available again <a href="/movies/create/{{ itemInstance.id }}/">here</a>.
+The files are currently not available, but you can create a request, that will be served later, when the files are available again <a href="/items/create/{{ itemInstance.id }}/">here</a>.
                 {% endif %}
             {% else %}
 Sorry, the files are not locally available and therefore no download links can be created.
                 {% if itemInstance.creator %}
-<a href="/movies/request/{{ itemInstance.id }}">Request upload of the movie.</a>
+<a href="/items/request/{{ itemInstance.id }}">Request upload of the movie.</a>
                 {% endif %}
             {% endif%}
         {% endif %}
@@ -91,7 +91,7 @@ Sorry, the files are not locally available and therefore no download links can b
 
     <div>
         <input id="adddownloadlinksbutton{{itemInstance.id}}" type="button" onclick="$('adddownloadlinks{{itemInstance.id}}').toggle();$('adddownloadlinksbutton{{itemInstance.id}}').toggle();" value="Add download links" />
-        <form action="/movies/addlinks/{{ itemInstance.id }}/" enctype="multipart/form-data" method="POST">{% csrf_token %}
+        <form action="/items/addlinks/{{ itemInstance.id }}/" enctype="multipart/form-data" method="POST">{% csrf_token %}
             <fieldset id="adddownloadlinks{{itemInstance.id}}" style="display:none;">
                 <legend>
                     <input id="adddownloadlinksbutton{{itemInstance.id}}" type="button" onclick="$('adddownloadlinks{{itemInstance.id}}').toggle();$('adddownloadlinksbutton{{itemInstance.id}}').toggle();" value="Add download links" />

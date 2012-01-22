@@ -1,14 +1,10 @@
-import os.path
-import smtplib
-from email.mime.text import MIMEText
-
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 from django.shortcuts import render_to_response, get_object_or_404
-from django.views.decorators.csrf import csrf_protect
 
-from mediaExchange.movies.forms import AddItemUploadForm, RatingForm
-from mediaExchange.movies.models import DownloadFile, DownloadFileGroup, EncryptionKey, ItemInstance, ItemRequest, Movie, Rating, UploadRequest, Vote
+from mediaExchange.items.forms import AddItemUploadForm, RatingForm
+from mediaExchange.items.models import DownloadFile, DownloadFileGroup, EncryptionKey, ItemInstance, ItemRequest, Rating, UploadRequest, Vote, Movie
+from mediaExchange.items.views import sendMail
 
 @login_required
 def moviesindex(request):
@@ -30,21 +26,9 @@ def moviesdetails(request, movie_id):
                 v = v[0]
                 v.watchable = watchable
             v.save()
-    return getDetails(request, movie)
+    return getMovieDetails(request, movie)
 
-@csrf_protect
-@login_required
-def moviescreate(request, item_instance_id):
-    print 'create called'
-    itemInstance = get_object_or_404(ItemInstance, pk=item_instance_id)
-    if not DownloadFileGroup.objects.filter(itemInstance=itemInstance):
-        ur = UploadRequest.objects.filter(itemInstance=itemInstance)
-        if not ur:
-            ur = UploadRequest(itemInstance=itemInstance, user=request.user)
-            ur.save()
-    return getDetails(request, itemInstance.item)
-
-def getDetails(request, item, message=None):
+def getMovieDetails(request, item, message=None):
     c = {}
 
     item = item.getRealModel()
@@ -70,73 +54,3 @@ def getDetails(request, item, message=None):
               'addItemForm'        : form,
               'ratingForm'         : ratingForm})
     return render_to_response('movies/details.html', c)
-
-@login_required
-@csrf_protect
-def moviesaddlinks(request, item_instance_id):
-    c = {}
-    itemInstance = get_object_or_404(ItemInstance, pk=item_instance_id)
-    form = AddItemUploadForm(request.POST, request.FILES)
-    msg = addLinks(itemInstance=itemInstance, form=form)
-    return getDetails(request, itemInstance.item, msg)
-
-def addLinks(itemInstance, form):
-    msg = "Unable to add new links: Invalid form data."
-    if form.is_valid():
-        if form.cleaned_data['dlLinks'] or form.cleaned_data['dlLinksFile']:
-            dlUrls = []
-            if form.cleaned_data['dlLinks']:
-                dlUrls = [ url.strip() for url in form.cleaned_data['dlLinks'].split(',')]
-            else:
-                dlUrls = [ url.strip() for url in form.cleaned_data['dlLinksFile'] ]
-            if len(dlUrls) > 0:
-                key = EncryptionKey.fromFileHandle(form.cleaned_data['keyfile'])
-                downloadFileGroup = DownloadFileGroup(itemInstance=itemInstance, key=key)
-                downloadFileGroup.save()
-                for url in dlUrls:
-                    df = DownloadFile(downloadFileGroup=downloadFileGroup, downloadLink=url)
-                    df.save()
-                msg = "Thanks for uploading new links."
-            else:
-                msg = "Unable to add new links: No download links found."
-        else:
-            msg = "Unable to add new links: Neither download links nor download links file given."
-    return msg
-
-
-@login_required
-def moviesrequest(request, movie_id):
-    c = {}
-    itemInstance = get_object_or_404(ItemInstance, pk=item_instance_id)
-    if movie.creator:
-        msg = sendMovieRequestMail(itemInstance, request.user)
-        if not msg:
-            ItemRequest(requester=request.user, itemInstance=itemInstance).save()
-            msg = "The contributor received a message of your request."
-    else:
-        msg = "Sorry the contributor of this item is unknown."
-    return getDetails(request, itemInstance.item, msg)
-
-def sendMovieRequestMail(itemInstance, requester):
-    movie = itemInstance.item.getRealModel()
-    movietitle = "%s" % movie.name
-    if movie.subname:
-        movietitle += " - %s" % movie.subname
-    subject = "Request for '%s' from '%s'" % (movietitle, str(requester))
-    body = "%s has requested movie '%s'" % (movietitle, str(requester))
-    if itemInstance.source:
-        body += "in %s" % itemInstance.source.name
-    return sendMail([itemInstance.creator.email], subject, body)
-
-def sendMail(rcpts, subject, body):
-    sender = "mediaExchange@foobar.com"
-    msg = MIMEText(body)
-    msg['Subject'] = subject
-    msg['From'] = sender
-    msg['To'] = ", ".join(rcpts)
-    try:
-        server = smtplib.SMTP('localhost')
-        server.sendmail(sender, rcpts, msg.as_string())
-        server.quit()
-    except Exception, e:
-        return "Sorry, Unable to request item: '%s'" % str(e)
