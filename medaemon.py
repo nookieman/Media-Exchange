@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from MultiUpload import MultiUpload
-from uploader import *
+from meuploader import *
 
 from mediaExchange.movies.models import UploadRequest, DownloadFile, DownloadFileGroup, EncryptionKey
 
