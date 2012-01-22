@@ -118,7 +118,7 @@ Sorry, the files are not locally available and therefore no download links can b
 </div>
 {% if wvotes %}
 <br/>
-<div>Marked watchable by:
+<div style="color: green;">Marked watchable by:
     {% for wv in wvotes %}
         {{ wv.user|escape }}
     {% endfor %}
@@ -126,7 +126,7 @@ Sorry, the files are not locally available and therefore no download links can b
 {% endif %}
 {% if nvotes %}
 <br/>
-<div>Marked unwatchable by:
+<div style="color: red;">Marked unwatchable by:
     {% for nv in nvotes %}
         {{ nv.user|escape }}
     {% endfor %}
