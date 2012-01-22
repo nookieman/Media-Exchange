@@ -323,11 +323,6 @@ class Rating(models.Model):
             rating = Rating(user=user, item=item, rating=rating)
         rating.save()
 
-class Vote(models.Model):
-    user = models.ForeignKey(User)
-    movie = models.ForeignKey('Item')
-    watchable = models.BooleanField()
-
 class Movie(Item):
     subname = models.CharField(max_length=256, blank=True, null=True)
     year = models.IntegerField(blank=True, null=True)
