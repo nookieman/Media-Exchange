@@ -18,7 +18,7 @@ def itemsdetails(request, itemid):
 
     if request.method == 'POST':
         if 'watchable' in request.POST:
-            v = Vote.objects.filter(user=request.user, movie=movie)
+            v = Vote.objects.filter(user=request.user, item=item)
             watchable = request.POST['watchable'] == 'watchable'
             if not v:
                 v = Vote(user=request.user, item=item, watchable=watchable)
