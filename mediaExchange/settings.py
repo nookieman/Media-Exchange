@@ -121,14 +121,16 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     'django.contrib.admindocs',
 
+    'mediaExchange.items',
     'mediaExchange.movies',
     'mediaExchange.users',
     'mediaExchange.ajax',
-    'mediaExchange.items',
     'mediaExchange.series',
     'mediaExchange.mediaUpload',
     'mediaExchange.about',
     'mediaExchange.index',
+    'mediaExchange.exporter',
+    'mediaExchange.importer',
 )
 
 LOGIN_URL = '/users/login/'
