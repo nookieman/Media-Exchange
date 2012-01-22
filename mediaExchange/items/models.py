@@ -443,3 +443,8 @@ class Season(Item):
             d['genre'] = self.genre.name
         return d
 
+class Vote(models.Model):
+
+    user = models.ForeignKey(User)
+    item = models.ForeignKey('Item')
+    watchable = models.BooleanField()

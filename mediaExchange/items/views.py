@@ -15,6 +15,18 @@ from mediaExchange.index.views import indexindex
 def itemsdetails(request, itemid):
     print 'itemsdetails(',itemid,')'
     item = get_object_or_404(Item, pk=itemid)
+
+    if request.method == 'POST':
+        if 'watchable' in request.POST:
+            v = Vote.objects.filter(user=request.user, movie=movie)
+            watchable = request.POST['watchable'] == 'watchable'
+            if not v:
+                v = Vote(user=request.user, item=item, watchable=watchable)
+            else:
+                v = v[0]
+                v.watchable = watchable
+            v.save()
+
     return getItemDetails(request, item)
 
 @login_required
@@ -85,8 +97,8 @@ def getItemDetails(request, item, msg=None):
     c = {}
     item = item.getRealModel()
     itemInstances = ItemInstance.objects.filter(item=item)
-    wvotes = Vote.objects.filter(movie=item, watchable=True)
-    nvotes = Vote.objects.filter(movie=item, watchable=False)
+    wvotes = Vote.objects.filter(item=item, watchable=True)
+    nvotes = Vote.objects.filter(item=item, watchable=False)
     urs = UploadRequest.objects.filter(done=False).order_by('id')
     form = AddItemUploadForm()
 
