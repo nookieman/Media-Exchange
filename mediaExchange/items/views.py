@@ -7,14 +7,15 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 
-from mediaExchange.items.models import DownloadFile, DownloadFileGroup, Item, ItemInstance, UploadRequest, EncryptionKey, Movie, Season
+from mediaExchange.items.forms import AddItemUploadForm, RatingForm
+from mediaExchange.items.models import DownloadFile, DownloadFileGroup, Item, ItemInstance, Rating, UploadRequest, EncryptionKey, Movie, Season, Vote
 from mediaExchange.index.views import indexindex
 
 @login_required
 def itemsdetails(request, itemid):
     print 'itemsdetails(',itemid,')'
     item = get_object_or_404(Item, pk=itemid)
-    return getItemDetails(item)
+    return getItemDetails(request, item)
 
 @login_required
 def itemsgetkey(request, keyid):
@@ -81,16 +82,32 @@ def addLinks(itemInstance, form):
     return msg
 
 def getItemDetails(request, item, msg=None):
-    realItem = item.getRealModel()
-    if isinstance(realItem, Movie):
-        from mediaExchange.movies.views import getMovieDetails
-        response = getMovieDetails(request, realItem, msg)
-    elif isinstance(realItem, Season):
-        from mediaExchange.series.views import getSeasonDetails
-        response = getSeasonDetails(request, realItem, msg)
-    else:
-        response = indexindex(request)
-    return response
+    c = {}
+    item = item.getRealModel()
+    itemInstances = ItemInstance.objects.filter(item=item)
+    wvotes = Vote.objects.filter(movie=item, watchable=True)
+    nvotes = Vote.objects.filter(movie=item, watchable=False)
+    urs = UploadRequest.objects.filter(done=False).order_by('id')
+    form = AddItemUploadForm()
+
+    ratingInitial = {'item':item}
+    try:
+        rating = Rating.objects.get(user=request.user, item=item)
+        ratingInitial['rating'] = rating.rating
+    except Rating.DoesNotExist:
+        pass
+    ratingForm = RatingForm(initial=ratingInitial)
+
+    c.update({'item'           : item,
+              'itemInstances'  : itemInstances,
+              'wvotes'         : wvotes,
+              'nvotes'         : nvotes,
+              'uploadRequests' : urs,
+              'message'        : msg,
+              'ratingForm'     : ratingForm,
+              'addItemForm'    : form})
+    c.update(csrf(request))
+    return render_to_response('items/details.html', c)
 
 def sendMail(rcpts, subject, body):
     sender = "mediaExchange@foobar.com"

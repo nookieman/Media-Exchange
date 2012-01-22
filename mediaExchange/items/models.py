@@ -50,6 +50,9 @@ class Item(models.Model):
     def __unicode__(self):
         return self.getRealModel().__unicode__()
 
+    def getName(self):
+        return self.name
+
     def getRealModel(self):
         realModel = None
         try:
@@ -333,6 +336,12 @@ class Movie(Item):
     def __unicode__(self):
         return self.name
 
+    def getName(self):
+        return "%s" % self.name
+
+    def getSubname(self):
+        return self.subname
+
     def getTypeString(self):
         return "movie"
 
@@ -393,6 +402,15 @@ class Season(Item):
 
     def __unicode__(self):
         return "%s S%d" % (self.serie.name, self.number)
+
+    def getName(self):
+        return "%s" % self.serie.name
+
+    def getSubname(self):
+        subname = "season %d" % self.number
+        if self.subname:
+            subname += " (%s)" % self.subname
+        return subname
 
     def getTypeString(self):
         return "serie"
