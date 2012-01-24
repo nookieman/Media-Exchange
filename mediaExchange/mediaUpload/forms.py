@@ -25,3 +25,9 @@ class SeriesUploadForm(UploadForm):
     genre = forms.CharField(label='Genre', max_length=256, required=False)
     source = forms.CharField(label='Source', max_length=256, required=False)
 
+class AudioUploadForm(UploadForm):
+    artist = forms.CharField(label='Artist', max_length=256)
+    year = forms.CharField(label='Year', max_length=4, required=False)
+    genre = forms.CharField(label='Genre', max_length=256, required=False)
+    language = forms.CharField(label='Language', max_length=256, required=False)
+    source = forms.CharField(label='Source', max_length=256, required=False)

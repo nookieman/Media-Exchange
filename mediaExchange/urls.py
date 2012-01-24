@@ -16,6 +16,7 @@ urlpatterns = patterns('',
     url(r'^about/', include('mediaExchange.about.urls')),
     url(r'^export/', include('mediaExchange.exporter.urls')),
     url(r'^import/', include('mediaExchange.importer.urls')),
+    url(r'^audios/', include('mediaExchange.audios.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

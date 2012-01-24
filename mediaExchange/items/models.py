@@ -61,7 +61,10 @@ class Item(models.Model):
             try:
                 realModel = Season.objects.get(id=self.id)
             except Season.DoesNotExist:
-                raise Exception("ERROR: Item not identifiable")
+                try:
+                    realModel = Audio.objects.get(id=self.id)
+                except Audio.DoesNotExist:
+                    raise Exception("ERROR: Item not identifiable")
         return realModel
 
     def toDict(self):
@@ -437,6 +440,68 @@ class Season(Item):
         if self.genre:
             d['genre'] = self.genre.name
         return d
+
+class Artist(models.Model):
+    name = models.CharField(max_length=256)
+
+    def __unicode__(self):
+        return self.name
+
+    @staticmethod
+    def getOrCreate(name):
+        try:
+           artist = Artist.objects.get(name=name)
+        except Artist.DoesNotExist:
+            artist = Artist(name=name)
+            artist.save()
+        return artist
+
+class Audio(Item):
+    artist = models.ForeignKey('Artist', blank=True, null=True)
+    year = models.IntegerField(blank=True, null=True)
+    genre = models.ForeignKey('Genre')
+
+    def __unicode__(self):
+        uc = self.getName()
+        if self.year:
+            uc += " (%d)" % self.year
+        return uc
+
+    def toDict(self):
+        d = {'id'     : self.id,
+             'name'   : self.name}
+        if self.artist:
+            d['artist'] = self.artist.name
+        if self.year:
+            d['year'] = self.year
+        if self.genre:
+            d['genre'] = self.genre.name
+        return d
+
+    def getName(self):
+        uc = ""
+        if self.artist:
+            uc = "%s - " % self.artist
+        uc += self.name
+        return uc
+
+    def getSubname(self):
+        return None
+
+    def getTypeString(self):
+        return "audio"
+
+    def getItemRequestString(self):
+        return self.__unicode__()
+
+    @staticmethod
+    def getOrCreate(name, artist=None, genre=None, year=None):
+        try:
+           audio = Audio.objects.get(name=name, artist=artist, genre=genre, year=year)
+        except Audio.DoesNotExist:
+            audio = Audio(name=name, artist=artist, genre=genre, year=year)
+            audio.save()
+        return audio
 
 class Vote(models.Model):
 

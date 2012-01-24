@@ -4,5 +4,6 @@ urlpatterns = patterns('mediaExchange.mediaUpload.views',
     (r'^progress/.*$', 'upload_progress'),
     (r'^movie/', 'mediaUploadMovie'),
     (r'^series/', 'mediaUploadSeries'),
+    (r'^audio/', 'mediaUploadAudio'),
     (r'^.*$', 'mediaUploadindex'),
 )
