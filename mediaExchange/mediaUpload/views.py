@@ -91,9 +91,11 @@ def handleMovie(request):
             m = Movie(name=form.cleaned_data['name'], subname=subname,
                       year=year, genre=genre)
             m.save()
-            itemInstance = ItemInstance(size=filesize, language=language,
-                                        source=source, present=False,
-                                        creator=request.user, item=m)
+            itemInstance = ItemInstance.getOrCreate(size=filesize,
+                                                    language=language,
+                                                    source=source,
+                                                    creator=request.user,
+                                                    item=m)
             itemInstance.save()
             if form.cleaned_data['file']:
                 itemInstance.path = generateDestinationPath(form)
@@ -162,15 +164,12 @@ def handleSerie(request):
 
         try:
             season = Season.getOrCreate(serie=serie, subname=subname,
-                                        number=number, language=language,
-                                        year=year, genre=genre, source=source,
-                                        present=False, creator=request.user)
+                                        number=number, year=year, genre=genre)
             season.save()
             itemInstance = ItemInstance.getOrCreate(size=filesize,
                                                     language=language,
                                                     source=source,
-                                                    present=False,
-                                                    creator=requests.user,
+                                                    creator=request.user,
                                                     item=season)
             itemInstance.save()
 
