@@ -3,7 +3,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 
 from mediaExchange.items.models import Item, UploadRequest
-from mediaExchange.movies.forms import RatingForm
+from mediaExchange.items.forms import RatingForm
 
 import time
 
