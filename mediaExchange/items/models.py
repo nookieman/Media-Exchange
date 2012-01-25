@@ -81,41 +81,35 @@ class Item(models.Model):
 
         if struct.has_key('movies'):
             for moviestruct in struct['movies']:
-                lang = Language.getOrCreate(moviestruct.get('language', None))
                 genre = Genre.getOrCreate(moviestruct.get('genre', None))
-                source = Source.getOrCreate(moviestruct.get('source', None))
                 movie = Movie.getOrCreate(name=moviestruct.get('name'),
                                           subname=moviestruct.get('subname', None),
                                           year=moviestruct.get('year', None),
                                           genre=genre)
-                movieInstance = ItemInstance.getOrCreate(item=movie,
-                                          language=lang,
-                                          source=source,
-                                          size=moviestruct.get('size', None))
                 Item._createDownloadFileGroups(moviestruct.get('downloadFileGroups', []),
-                                               movieInstance, keys)
+                                               movie, keys)
 
         if struct.has_key('series'):
             for seriestruct in struct['series']:
-                lang = Language.getOrCreate(seriestruct.get('language', None))
                 genre = Genre.getOrCreate(seriestruct.get('genre', None))
-                source = Source.getOrCreate(seriestruct.get('source', None))
                 serie = Serie.getOrCreate(seriestruct['name'])
                 season = Season.getOrCreate(serie=serie,
                                             number=seriestruct['number'],
                                             subname=seriestruct.get('subname', None),
                                             year=seriestruct.get('year', None),
                                             genre=genre)
-                seasonInstance = ItemInstance.getOrCreate(item=season,
-                                                          language=lang,
-                                                          source=source,
-                                                          size=seriestruct.get('size', None))
                 Item._createDownloadFileGroups(seriestruct.get('downloadFileGroups', []),
                                                seasonInstance, keys)
 
     @staticmethod
-    def _createDownloadFileGroups(struct, itemInstance, keys):
+    def _createDownloadFileGroups(struct, item, keys):
         for downloadFileGroup in struct:
+            lang = Language.getOrCreate(downloadFileGroup.get('language', None))
+            source = Source.getOrCreate(downloadFileGroup.get('source', None))
+            itemInstance = ItemInstance.getOrCreate(item=item,
+                                                    language=lang,
+                                                    source=source,
+                                                    size=downloadFileGroup.get('size', None))
             key = keys[downloadFileGroup['key']]
             dfg = DownloadFileGroup(itemInstance=itemInstance, key=key)
             dfg.save()
