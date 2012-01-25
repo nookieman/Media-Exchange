@@ -99,7 +99,18 @@ class Item(models.Model):
                                             year=seriestruct.get('year', None),
                                             genre=genre)
                 Item._createDownloadFileGroups(seriestruct.get('downloadFileGroups', []),
-                                               seasonInstance, keys)
+                                               season, keys)
+
+        if struct.has_key('audios'):
+            for audiostruct in struct['audios']:
+                genre = Genre.getOrCreate(audiostruct.get('genre', None))
+                artist = Artist.getOrCreate(audiostruct['artist'])
+                audio = Audio.getOrCreate(artist=artist,
+                                          name=audiostruct['name'],
+                                          year=audiostruct.get('year', None),
+                                          genre=genre)
+                Item._createDownloadFileGroups(audiostruct.get('downloadFileGroups', []),
+                                               audio, keys)
 
     @staticmethod
     def _createDownloadFileGroups(struct, item, keys):
