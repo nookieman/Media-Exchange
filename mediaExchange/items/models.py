@@ -86,8 +86,8 @@ class Item(models.Model):
                                           subname=moviestruct.get('subname', None),
                                           year=moviestruct.get('year', None),
                                           genre=genre)
-                Item._createDownloadFileGroups(moviestruct.get('downloadFileGroups', []),
-                                               movie, keys)
+                Item._createItemInstances(moviestruct.get('instances', []),
+                                          movie, keys)
 
         if struct.has_key('series'):
             for seriestruct in struct['series']:
@@ -98,8 +98,8 @@ class Item(models.Model):
                                             subname=seriestruct.get('subname', None),
                                             year=seriestruct.get('year', None),
                                             genre=genre)
-                Item._createDownloadFileGroups(seriestruct.get('downloadFileGroups', []),
-                                               season, keys)
+                Item._createItemInstances(seriestruct.get('instances', []),
+                                          season, keys)
 
         if struct.has_key('audios'):
             for audiostruct in struct['audios']:
@@ -109,19 +109,26 @@ class Item(models.Model):
                                           name=audiostruct['name'],
                                           year=audiostruct.get('year', None),
                                           genre=genre)
-                Item._createDownloadFileGroups(audiostruct.get('downloadFileGroups', []),
-                                               audio, keys)
+                Item._createItemInstances(audiostruct.get('instances', []),
+                                          audio, keys)
 
     @staticmethod
-    def _createDownloadFileGroups(struct, item, keys):
-        for downloadFileGroup in struct:
-            lang = Language.getOrCreate(downloadFileGroup.get('language', None))
-            source = Source.getOrCreate(downloadFileGroup.get('source', None))
+    def _createItemInstances(struct, item, keys):
+        for instance in struct:
+            lang = Language.getOrCreate(instance.get('language', None))
+            source = Source.getOrCreate(instance.get('source', None))
             itemInstance = ItemInstance.getOrCreate(item=item,
                                                     language=lang,
                                                     source=source,
-                                                    size=downloadFileGroup.get('size', None))
-            key = keys[downloadFileGroup['key']]
+                                                    size=instance.get('size', None))
+            Item._createDownloadFileGroups(instance.get('downloadFileGroups', []),
+                                           itemInstance, keys)
+
+
+    @staticmethod
+    def _createDownloadFileGroups(struct, itemInstance, keys):
+        for downloadFileGroup in struct:
+            key = keys[str(downloadFileGroup['key'])]
             dfg = DownloadFileGroup(itemInstance=itemInstance, key=key)
             dfg.save()
             for downloadLink in downloadFileGroup['downloadLinks']:

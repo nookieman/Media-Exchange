@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 
-from mediaExchange.items.models import UploadRequest, DownloadFileGroup, DownloadFile, EncryptionKey, ItemInstance, Movie, Season
+from mediaExchange.items.models import UploadRequest, DownloadFileGroup, DownloadFile, EncryptionKey, ItemInstance, Movie, Season, Audio
 
 @login_required
 def exporterexport(request):
@@ -44,10 +44,26 @@ def exporterexport(request):
                                                              }, ...],
                                    }, ... ],
                    }, ...]
+        'audios' : [ {
+                      'id' : ...,
+                      'name' : ...,
+                      'title' : ...,
+                      'genre'  : ...,
+                      'instance' : [ {
+                                      'size' : ...,
+                                      'language' : ...,
+                                      'source' : ...,
+                                      'downloadFileGroups' : [{
+                                                               'downloadLinks': [...],
+                                                               'key': ...
+                                                             }, ...],
+                                   }, ... ],
+                   }, ...]
     }
     """
     jsonStruct = createExportStruct(movies=Movie.objects.all(),
                                     seasons=Season.objects.all(),
+                                    audios=Audio.objects.all(),
                                     onlyDownloadable=True)
     jsonString = simplejson.dumps(jsonStruct)
     return HttpResponse(jsonString, "application/json")
@@ -55,7 +71,8 @@ def exporterexport(request):
 @login_required
 def exporterexportall(request):
     jsonStruct = createExportStruct(movies=Movie.objects.all(),
-                                    seasons=Season.objects.all())
+                                    seasons=Season.objects.all(),
+                                    audios=Audio.objects.all())
     jsonString = simplejson.dumps(jsonStruct)
     return HttpResponse(jsonString, "application/json")
 
@@ -80,10 +97,11 @@ def _jsonStructFromItemList(items, onlyDownloadable=False):
         itemStruct.append(itemDict)
     return itemStruct
 
-def createExportStruct(movies, seasons, onlyDownloadable=False):
+def createExportStruct(movies, seasons, audios, onlyDownloadable=False):
     jsonStruct = {}
     jsonStruct['movies'] = _jsonStructFromItemList(items=movies)
     jsonStruct['series'] = _jsonStructFromItemList(items=seasons)
+    jsonStruct['audios'] = _jsonStructFromItemList(items=audios)
     jsonStruct['keys'] = _jsonStructKeys()
     return jsonStruct
 
