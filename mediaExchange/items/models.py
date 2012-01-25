@@ -453,7 +453,7 @@ class Artist(models.Model):
 class Audio(Item):
     artist = models.ForeignKey('Artist', blank=True, null=True)
     year = models.IntegerField(blank=True, null=True)
-    genre = models.ForeignKey('Genre')
+    genre = models.ForeignKey('Genre', blank=True, null=True)
 
     def __unicode__(self):
         uc = self.getName()
