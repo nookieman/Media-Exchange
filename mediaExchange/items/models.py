@@ -149,13 +149,23 @@ class Item(models.Model):
     @staticmethod
     def _createDownloadFileGroups(struct, itemInstance, keys):
         for downloadFileGroup in struct:
+            exists = False
             key = keys[str(downloadFileGroup['key'])]
             dfg = DownloadFileGroup(itemInstance=itemInstance, key=key)
-            dfg.save()
+            dfs = []
             for downloadLink in downloadFileGroup['downloadLinks']:
-                df = DownloadFile(downloadFileGroup=dfg,
-                                  downloadLink=downloadLink)
-                df.save()
+                if DownloadFile.objects.filter(downloadLink=downloadLink).count():
+                    # break if one link already exists, because this means it's at
+                    # least partially duplicate
+                    exists = True
+                    break
+                else:
+                    df = DownloadFile(downloadFileGroup=dfg,
+                                      downloadLink=downloadLink)
+            if not exists:
+                dfg.save()
+                for df in dfs:
+                    df.save()
 
     @staticmethod
     def parseDefaultItemFormElements(form):
