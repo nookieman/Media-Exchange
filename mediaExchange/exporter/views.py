@@ -13,6 +13,7 @@ def exporterexport(request):
     format:
     {
         'keys' : {'1' : {'chunkSize' : ..., 'key' : ...}, ... },
+        'users' : {'1' : {'username' : ..., 'email' : ...}, ...},
         'movies' : [ {
                       'id' : ...,
                       'name' : ...,
