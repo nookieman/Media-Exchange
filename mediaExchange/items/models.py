@@ -79,6 +79,23 @@ class Item(models.Model):
                 keys[keyid] = EncryptionKey.getOrCreate(chunkSize=keyvals['chunkSize'],
                                                         keydata=keyvals['key'])
 
+        users = {}
+        if struct.has_key('users'):
+            for userid, uservals in struct['users'].items():
+                user = None
+                try:
+                    user = User.objects.get(username=uservals['username'])
+                    if user.email != uservals['email']:
+                        # make username different
+                        uservals['username'] += '_' + chr(141 + (len(uservals['username']) % 26))
+                        raise User.DoesNotExist()
+                except User.DoesNotExist:
+                    user = User.objects.create_user(uservals['username'],
+                                                    uservals['email'])
+                user.is_active = False
+                user.save()
+                users[userid] = user
+
         if struct.has_key('movies'):
             for moviestruct in struct['movies']:
                 genre = Genre.getOrCreate(moviestruct.get('genre', None))
@@ -87,7 +104,7 @@ class Item(models.Model):
                                           year=moviestruct.get('year', None),
                                           genre=genre)
                 Item._createItemInstances(moviestruct.get('instances', []),
-                                          movie, keys)
+                                          movie, keys, users)
 
         if struct.has_key('series'):
             for seriestruct in struct['series']:
@@ -99,7 +116,7 @@ class Item(models.Model):
                                             year=seriestruct.get('year', None),
                                             genre=genre)
                 Item._createItemInstances(seriestruct.get('instances', []),
-                                          season, keys)
+                                          season, keys, users)
 
         if struct.has_key('audios'):
             for audiostruct in struct['audios']:
@@ -110,17 +127,21 @@ class Item(models.Model):
                                           year=audiostruct.get('year', None),
                                           genre=genre)
                 Item._createItemInstances(audiostruct.get('instances', []),
-                                          audio, keys)
+                                          audio, keys, users)
 
     @staticmethod
-    def _createItemInstances(struct, item, keys):
+    def _createItemInstances(struct, item, keys, users):
         for instance in struct:
             lang = Language.getOrCreate(instance.get('language', None))
             source = Source.getOrCreate(instance.get('source', None))
+            user = None
+            if instance.has_key('user'):
+                user = users[str(instance['user'])]
             itemInstance = ItemInstance.getOrCreate(item=item,
                                                     language=lang,
                                                     source=source,
-                                                    size=instance.get('size', None))
+                                                    size=instance.get('size', None),
+                                                    creator=user)
             Item._createDownloadFileGroups(instance.get('downloadFileGroups', []),
                                            itemInstance, keys)
 
