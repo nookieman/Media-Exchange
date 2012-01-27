@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>audio</h1>
+
+<ul>
+{% for audio in audios %}
+    <li>
+        <a href="/items/{{ audio.id }}/">
+            {{ audio.getName|escape }}
+        </a>
+        {% for dur in doneUploadRequests %}
+            {% ifequal dur.item.id audio.id %}
+                (ready)
+            {% endifequal %}
+        {% endfor %}
+    </li>
+{% endfor %}
+</ul>
+
+{% endblock %}
