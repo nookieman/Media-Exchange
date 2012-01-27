@@ -245,6 +245,8 @@ class ItemInstance(models.Model):
 
     def toDict(self):
         d = {}
+        if self.creator:
+            d['user'] = self.creator.id
         if self.language:
             d['language'] = self.language.name
         if self.source:

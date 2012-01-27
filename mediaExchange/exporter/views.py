@@ -99,10 +99,12 @@ def _jsonStructFromItemList(items, onlyDownloadable=False):
 
 def createExportStruct(movies, seasons, audios, onlyDownloadable=False):
     jsonStruct = {}
+    allItems = list(movies) + list(seasons) + list(audios)
     jsonStruct['movies'] = _jsonStructFromItemList(items=movies)
     jsonStruct['series'] = _jsonStructFromItemList(items=seasons)
     jsonStruct['audios'] = _jsonStructFromItemList(items=audios)
     jsonStruct['keys'] = _jsonStructKeys()
+    jsonStruct['users'] = _jsonStructUser(allItems)
     return jsonStruct
 
 def _jsonStructKeys(keyIdList=None):
@@ -113,3 +115,11 @@ def _jsonStructKeys(keyIdList=None):
                                   'key'       : key.key}
     return keysStruct
 
+def _jsonStructUser(items):
+    userStruct = {}
+    for item in items:
+        for itemInstance in ItemInstance.objects.filter(item=item):
+            if itemInstance.creator and not itemInstance.creator.id in userStruct:
+                userStruct[itemInstance.creator.id] = {'username' : itemInstance.creator.username,
+                                                       'email'    : itemInstance.creator.email}
+    return userStruct
