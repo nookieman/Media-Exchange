@@ -136,6 +136,12 @@ class Item(models.Model):
                                   downloadLink=downloadLink)
                 df.save()
 
+    @staticmethod
+    def parseDefaultItemFormElements(form):
+        subname = form.cleaned_data.get('subname', None)
+        genre = Genre.getOrCreate(form.cleaned_data['genre'])
+        year = form.cleaned_data.get('year', None)
+        return subname, genre, year
 
 class Language(models.Model):
     name = models.CharField(max_length=256, blank=True, null=True)
@@ -375,6 +381,14 @@ class Movie(Item):
             movie.save()
         return movie
 
+    @staticmethod
+    def handleForm(form):
+        subname, genre, year = Item.parseDefaultItemFormElements(form)
+        name = form.cleaned_data['name']
+
+        return Movie.getOrCreate(name=name, subname=subname,
+                                 year=year, genre=genre)
+
     def toDict(self):
         d = {'id'   : self.id,
              'name' : self.name}
@@ -440,6 +454,15 @@ class Season(Item):
             season = Season(serie=serie, subname=subname, number=number, genre=genre, year=year)
             season.save()
         return season
+
+    @staticmethod
+    def handleForm(form):
+        subname, genre, year = Item.parseDefaultItemFormElements(form)
+        serie = Serie.getOrCreate(form.cleaned_data['name'])
+        number = form.cleaned_data['number']
+
+        return Season.getOrCreate(serie=serie, subname=subname,
+                                  number=number, year=year, genre=genre)
 
     def toDict(self):
         d = {'id'     : self.id,
@@ -514,6 +537,15 @@ class Audio(Item):
             audio = Audio(name=name, artist=artist, genre=genre, year=year)
             audio.save()
         return audio
+
+    @staticmethod
+    def handleForm(form):
+        subname, genre, year = Item.parseDefaultItemFormElements(form)
+        artist = Artist.getOrCreate(form.cleaned_data.get('artist', None))
+        name = form.cleaned_data['name']
+
+        return Audio.getOrCreate(name=name, artist=artist,
+                                 year=year, genre=genre)
 
 class Vote(models.Model):
 
