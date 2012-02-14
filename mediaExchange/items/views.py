@@ -67,11 +67,17 @@ def itemsaddlinks(request, item_instance_id):
     c = {}
     itemInstance = get_object_or_404(ItemInstance, pk=item_instance_id)
     form = AddItemUploadForm(request.POST, request.FILES)
-    msg = addLinks(itemInstance=itemInstance, form=form)
+    msg, success = addLinks(itemInstance=itemInstance, form=form)
+    if success:
+        for itemRequest in ItemRequest.objects.filter(itemInstance=itemInstance, processed=False):
+            sendAvailableMail(itemRequest.requester, itemInstance)
+            itemRequest.processed = True
+            itemRequest.save()
     return getItemDetails(request, itemInstance.item, msg)
 
 def addLinks(itemInstance, form):
     msg = "Unable to add new links: Invalid form data."
+    success = False
     if form.is_valid():
         if form.cleaned_data['dlLinks'] or form.cleaned_data['dlLinksFile']:
             dlUrls = []
@@ -87,11 +93,12 @@ def addLinks(itemInstance, form):
                     df = DownloadFile(downloadFileGroup=downloadFileGroup, downloadLink=url)
                     df.save()
                 msg = "Thanks for uploading new links."
+                success = True
             else:
                 msg = "Unable to add new links: No download links found."
         else:
             msg = "Unable to add new links: Neither download links nor download links file given."
-    return msg
+    return msg, success
 
 def getItemDetails(request, item, msg=None):
     c = {}
@@ -120,6 +127,12 @@ def getItemDetails(request, item, msg=None):
               'addItemForm'    : form})
     c.update(csrf(request))
     return render_to_response('items/details.html', c)
+
+def sendAvailableMail(recepient, itemInstance):
+    recpts = [recepient.email]
+    subject = "%s is now available" % str(itemInstance)
+    body = "New links have been added for your requested item:\n%s" % str(itemInstance)
+    return sendMail(recpts, subject, body)
 
 def sendMail(rcpts, subject, body):
     sender = "mediaExchange@foobar.com"
