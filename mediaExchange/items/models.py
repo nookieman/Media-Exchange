@@ -170,8 +170,12 @@ class Item(models.Model):
     @staticmethod
     def parseDefaultItemFormElements(form):
         subname = form.cleaned_data.get('subname', None)
+        if subname == "":
+            subname = None
         genre = Genre.getOrCreate(form.cleaned_data['genre'])
         year = form.cleaned_data.get('year', None)
+        if year == "":
+            year = None
         return subname, genre, year
 
 class Language(models.Model):
