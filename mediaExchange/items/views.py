@@ -8,7 +8,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 
 from mediaExchange.items.forms import AddItemUploadForm, RatingForm
-from mediaExchange.items.models import DownloadFile, DownloadFileGroup, Item, ItemInstance, Rating, UploadRequest, EncryptionKey, Movie, Season, Vote
+from mediaExchange.items.models import DownloadFile, DownloadFileGroup, Item, ItemInstance, ItemRequest, Rating, UploadRequest, EncryptionKey, Movie, Season, Vote
 from mediaExchange.index.views import indexindex
 
 @login_required
@@ -55,7 +55,7 @@ def itemsrequest(request, item_instance_id):
         body = itemInstance.getRequestMailBody(request.user)
         msg = sendMail([itemInstance.creator.email], subject, body)
         if not msg:
-            itemRequest(requester=request.user, itemInstance=itemInstance).save()
+            ItemRequest(requester=request.user, itemInstance=itemInstance).save()
             msg = "The contributor received a message of your request."
     else:
         msg = "Sorry the contributor of this item is unknown."
