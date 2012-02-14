@@ -132,5 +132,5 @@ def sendMail(rcpts, subject, body):
         server.sendmail(sender, rcpts, msg.as_string())
         server.quit()
     except Exception, e:
-        return "Sorry, Unable to request item: '%s'" % str(e)
+        return "Sorry, Unable to send mail: '%s'" % str(e)
 
