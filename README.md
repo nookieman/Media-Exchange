@@ -73,6 +73,7 @@ e.g.:
 The Big Bang Theory/Season 2 [DVDRip] |eng|
 ```
 
+Year, source, language and subtitles are optional.
 
 
 The medaemon.py script should run at all times. It is responsible to react on
