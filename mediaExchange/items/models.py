@@ -98,34 +98,34 @@ class Item(models.Model):
 
         if struct.has_key('movies'):
             for moviestruct in struct['movies']:
-                genre = Genre.getOrCreate(moviestruct.get('genre', None))
+                genres = Genre.getOrCreate(moviestruct.get('genres', None))
                 movie = Movie.getOrCreate(name=moviestruct.get('name'),
                                           subname=moviestruct.get('subname', None),
                                           year=moviestruct.get('year', None),
-                                          genre=genre)
+                                          genres=genres)
                 Item._createItemInstances(moviestruct.get('instances', []),
                                           movie, keys, users)
 
         if struct.has_key('series'):
             for seriestruct in struct['series']:
-                genre = Genre.getOrCreate(seriestruct.get('genre', None))
+                genres = Genre.getOrCreate(seriestruct.get('genres', None))
                 serie = Serie.getOrCreate(seriestruct['name'])
                 season = Season.getOrCreate(serie=serie,
                                             number=seriestruct['number'],
                                             subname=seriestruct.get('subname', None),
                                             year=seriestruct.get('year', None),
-                                            genre=genre)
+                                            genres=genres)
                 Item._createItemInstances(seriestruct.get('instances', []),
                                           season, keys, users)
 
         if struct.has_key('audios'):
             for audiostruct in struct['audios']:
-                genre = Genre.getOrCreate(audiostruct.get('genre', None))
+                genres = Genre.getOrCreate(audiostruct.get('genres', None))
                 artist = Artist.getOrCreate(audiostruct['artist'])
                 audio = Audio.getOrCreate(artist=artist,
                                           name=audiostruct['name'],
                                           year=audiostruct.get('year', None),
-                                          genre=genre)
+                                          genres=genres)
                 Item._createItemInstances(audiostruct.get('instances', []),
                                           audio, keys, users)
 
@@ -172,11 +172,11 @@ class Item(models.Model):
         subname = form.cleaned_data.get('subname', None)
         if subname == "":
             subname = None
-        genre = Genre.getOrCreate(form.cleaned_data['genre'])
+        genres = Genre.getOrCreate(form.cleaned_data['genres'])
         year = form.cleaned_data.get('year', None)
         if year == "":
             year = None
-        return subname, genre, year
+        return subname, genres, year
 
 class Language(models.Model):
     name = models.CharField(max_length=256, blank=True, null=True)
@@ -203,16 +203,17 @@ class Genre(models.Model):
         return self.name
 
     @staticmethod
-    def getOrCreate(name):
-        genre = None
-        if name:
-            genre = Genre.objects.filter(name=name)
-            if len(genre) > 0:
-                genre = genre[0]
-            else:
-                genre = Genre(name=name)
-                genre.save()
-        return genre
+    def getOrCreate(names):
+        genres = None
+        if names:
+            for name in names:
+                genre = Genre.objects.filter(name=name)
+                if len(genre) > 0:
+                    genre = genre[0]
+                else:
+                    genre = Genre(name=name)
+                    genre.save()
+        return genres
 
 class Source(models.Model):
     name = models.CharField(max_length=256, blank=True, null=True)
@@ -384,7 +385,7 @@ class Rating(models.Model):
 class Movie(Item):
     subname = models.CharField(max_length=256, blank=True, null=True)
     year = models.IntegerField(blank=True, null=True)
-    genre = models.ForeignKey('Genre', blank=True, null=True)
+    genres = models.ManyToManyField('Genre', blank=True, null=True)
 
     def __unicode__(self):
         return self.name
@@ -405,26 +406,29 @@ class Movie(Item):
         return request
 
     @staticmethod
-    def exists(name, subname, year, genre):
-        return Movie.objects.filter(name=name, subname=subname, year=year, genre=genre).count() > 0
+    def exists(name, subname, year, genres):
+        return Movie.objects.filter(name=name, subname=subname, year=year, genres=genres).count() > 0
 
     @staticmethod
-    def getOrCreate(name, subname=None, year=None, genre=None, size=None):
-        movie = Movie.objects.filter(name=name, subname=subname, year=year, genre=genre)
+    def getOrCreate(name, subname=None, year=None, genres=None, size=None):
+        movie = Movie.objects.filter(name=name, subname=subname, year=year, genres=genres)
         if len(movie) > 0:
             movie = movie[0]
         else:
-            movie = Movie(name=name, subname=subname, year=year, genre=genre)
+            movie = Movie(name=name, subname=subname, year=year)
+            if genres:
+                for genre in genres:
+                    movie.genres.add(genre)
             movie.save()
         return movie
 
     @staticmethod
     def handleForm(form):
-        subname, genre, year = Item.parseDefaultItemFormElements(form)
+        subname, genres, year = Item.parseDefaultItemFormElements(form)
         name = form.cleaned_data['name']
 
         return Movie.getOrCreate(name=name, subname=subname,
-                                 year=year, genre=genre)
+                                 year=year, genres=genres)
 
     def toDict(self):
         d = {'id'   : self.id,
@@ -433,8 +437,9 @@ class Movie(Item):
             d.update({'subname' : self.subname})
         if self.year:
             d.update({'year' : self.year})
-        if self.genre:
-            d.update({'genre' : self.genre.name})
+        if self.genres:
+            genreList = [genre.name for genre in self.genres]
+            d.update({'genres' : genreList})
         return d
 
 class Serie(models.Model):
@@ -457,7 +462,7 @@ class Season(Item):
     serie = models.ForeignKey('Serie')
     subname = models.CharField(max_length=256, blank=True, null=True)
     number = models.IntegerField(blank=False, null=False)
-    genre = models.ForeignKey('Genre', blank=True, null=True)
+    genres = models.ManyToManyField('Genre', blank=True, null=True)
     year = models.IntegerField(blank=True, null=True)
     directoryListing = models.TextField(blank=True, null=True)
 
@@ -483,23 +488,26 @@ class Season(Item):
         return request
 
     @staticmethod
-    def getOrCreate(serie, number, subname=None, genre=None, year=None):
-        season = Season.objects.filter(serie=serie, subname=subname, number=number, genre=genre, year=year)
+    def getOrCreate(serie, number, subname=None, genres=None, year=None):
+        season = Season.objects.filter(serie=serie, subname=subname, number=number, genres=genres, year=year)
         if len(season) > 0:
             season = season[0]
         else:
-            season = Season(serie=serie, subname=subname, number=number, genre=genre, year=year)
+            season = Season(serie=serie, subname=subname, number=number, year=year)
+            if genres:
+                for genre in genres:
+                    season.genres.add(genre)
             season.save()
         return season
 
     @staticmethod
     def handleForm(form):
-        subname, genre, year = Item.parseDefaultItemFormElements(form)
+        subname, genres, year = Item.parseDefaultItemFormElements(form)
         serie = Serie.getOrCreate(form.cleaned_data['name'])
         number = form.cleaned_data['number']
 
         return Season.getOrCreate(serie=serie, subname=subname,
-                                  number=number, year=year, genre=genre)
+                                  number=number, year=year, genres=genres)
 
     def toDict(self):
         d = {'id'     : self.id,
@@ -509,8 +517,9 @@ class Season(Item):
             d['subname'] = self.subname
         if self.year:
             d['year'] = self.year
-        if self.genre:
-            d['genre'] = self.genre.name
+        if self.genres:
+            genreList = [genre.name for genre in self.genres]
+            d.update({'genres' : genreList})
         return d
 
 class Artist(models.Model):
@@ -531,7 +540,7 @@ class Artist(models.Model):
 class Audio(Item):
     artist = models.ForeignKey('Artist', blank=True, null=True)
     year = models.IntegerField(blank=True, null=True)
-    genre = models.ForeignKey('Genre', blank=True, null=True)
+    genres = models.ManyToManyField('Genre', blank=True, null=True)
 
     def __unicode__(self):
         uc = self.getName()
@@ -546,8 +555,9 @@ class Audio(Item):
             d['artist'] = self.artist.name
         if self.year:
             d['year'] = self.year
-        if self.genre:
-            d['genre'] = self.genre.name
+        if self.genres:
+            genreList = [genre.name for genre in self.genres]
+            d.update({'genres' : genreList})
         return d
 
     def getName(self):
@@ -567,22 +577,25 @@ class Audio(Item):
         return self.__unicode__()
 
     @staticmethod
-    def getOrCreate(name, artist=None, genre=None, year=None):
+    def getOrCreate(name, artist=None, genres=None, year=None):
         try:
-           audio = Audio.objects.get(name=name, artist=artist, genre=genre, year=year)
+           audio = Audio.objects.get(name=name, artist=artist, genres=genres, year=year)
         except Audio.DoesNotExist:
-            audio = Audio(name=name, artist=artist, genre=genre, year=year)
+            audio = Audio(name=name, artist=artist, genres=genres, year=year)
+            if genres:
+                for genre in genres:
+                    audio.genres.add(genre)
             audio.save()
         return audio
 
     @staticmethod
     def handleForm(form):
-        subname, genre, year = Item.parseDefaultItemFormElements(form)
+        subname, genres, year = Item.parseDefaultItemFormElements(form)
         artist = Artist.getOrCreate(form.cleaned_data.get('artist', None))
         name = form.cleaned_data['name']
 
         return Audio.getOrCreate(name=name, artist=artist,
-                                 year=year, genre=genre)
+                                 year=year, genres=genres)
 
 class Vote(models.Model):
 

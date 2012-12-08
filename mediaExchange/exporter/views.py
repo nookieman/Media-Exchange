@@ -18,7 +18,7 @@ def exporterexport(request):
                       'id' : ...,
                       'name' : ...,
                       'subname' : ...
-                      'genre'  : ...,
+                      'genres'  : [...],
                       'instance' : [ {
                                       'size' : ...,
                                       'language' : ...,
@@ -34,7 +34,7 @@ def exporterexport(request):
                       'name' : ...,
                       'number' : ...,
                       'subname' : ...,
-                      'genre'  : ...,
+                      'genres'  : [...],
                       'instance' : [ {
                                       'size' : ...,
                                       'language' : ...,
@@ -49,7 +49,7 @@ def exporterexport(request):
                       'id' : ...,
                       'name' : ...,
                       'title' : ...,
-                      'genre'  : ...,
+                      'genres'  : [...],
                       'instance' : [ {
                                       'size' : ...,
                                       'language' : ...,
