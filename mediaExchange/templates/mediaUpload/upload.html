@@ -6,14 +6,26 @@
 <h4>{{ error|escape }}</h4>
 {% endif %}
 
-{% if form %}
+{% if itemForm and itemInstanceForm %}
 
 <form enctype="multipart/form-data" method="POST">{% csrf_token %}
     <fieldset>
     <legend>File Upload</legend>
     <table>
-        <tr><td colspan="2">NOTICE: Mandatory elements: ( <b>name</b> and ( <b>file</b> or ( ( <b>dlLinks</b> or <b>dlLinksFile</b> ) and <b>keyfile</b> ) ) [and <b>number</b> for series])</td></tr>
-        {{ form }}
+<!--        <tr><td colspan="2">NOTICE: Mandatory elements: ( <b>name</b> and ( <b>file</b> or ( ( <b>dlLinks</b> or <b>dlLinksFile</b> ) and <b>keyfile</b> ) ) [and <b>number</b> for series])</td></tr>-->
+        {{ itemForm }}
+        {{ itemInstanceForm }}
+        <tr>
+            <td style="text-align:right;">File:<input type="radio" name="submitType" onclick="$('linkUploadFormDiv').hide();$('fileUploadFormDiv').show();" /></td>
+            <td>Links:<input type="radio" name="submitType" onclick="$('fileUploadFormDiv').show();$('linkUploadFormDiv').hide();alert('1');" /></td>
+            <td></td>
+        </tr>
+        <div id="fileUploadFormDiv">
+            {{ fileUploadForm }}
+        </div>
+        <div id="linkUploadFormDiv">
+            {{ linkUploadForm }}
+        </div>
         <tr><td><input type="submit" /></td></tr>
     </table>
     </fieldset>
@@ -29,7 +41,7 @@ $j = jQuery.noConflict();
 function gen_uuid() {
     var uuid = ""
     for (var i=0; i < 32; i++) {
-        uuid += Math.floor(Math.random() * 16).toString(16); 
+        uuid += Math.floor(Math.random() * 16).toString(16);
     }
     return uuid
 }
@@ -49,7 +61,7 @@ $j(function() {
 
         var $progress = $j('<div id="upload-progress" class="upload-progress"></div>').
             appendTo(document.getElementsByTagName('fieldset')[0]).append('<div style="border-bottom-color:black; border-bottom-width:1px; border-bottom-style:solid;" class="progress-container"><span class="progress-info">uploading 0%</span><div class="progress-bar" style="border-top-color: red; border-top-width:10px; border-top-style:solid;"></div></div>');
-        
+
         // progress bar position
 //        $progress.css({
 //            position: ($j.browser.msie && $j.browser.version < 7 )? 'absolute' : 'fixed',

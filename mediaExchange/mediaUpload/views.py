@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from mediaExchange.settings import MOVIE_SAVE_DIRECTORY
 from mediaExchange.items.models import Language, Genre, Source, UploadRequest, EncryptionKey, DownloadFile, DownloadFileGroup, ItemInstance, Movie, Serie, Season, Artist, Audio
-from mediaExchange.mediaUpload.forms import UploadForm, MovieUploadForm, SeriesUploadForm, AudioUploadForm
+from mediaExchange.mediaUpload.forms import UploadForm, MovieUploadForm, SeriesUploadForm, AudioUploadForm, ItemInstanceForm, FileUploadForm, LinkUploadForm
 from mediaExchange.mediaUpload.handlers import ProgressUploadHandler
 
 @login_required
@@ -29,17 +29,22 @@ def _mediaUpload(request, category):
     c = {}
     error = None
     if request.method == 'POST':
-        form = UploadForm(request.POST, request.FILES)
-        if form.is_valid():
-                form, error = handleUpload(request, category)
+        itemForm = UploadForm(request.POST, request.FILES)
+        if itemForm.is_valid():
+                itemForm, error = handleUpload(request, category)
         else:
             error = 'invalid UploadForm'
-            form = createForm(category)
+            itemForm = createForm(category)
     else:
-        form = createForm(category)
+        itemForm = createForm(category)
     urs = UploadRequest.objects.filter(done=False).order_by('id')
+    itemInstanceForm = ItemInstanceForm()
+    fileUploadForm = FileUploadForm()
+    linkUploadForm = LinkUploadForm()
     c.update(csrf(request))
-    c.update({'form':form, 'error':error, 'uploadRequests':urs})
+    c.update({'itemForm':itemForm, 'itemInstanceForm':itemInstanceForm,
+              'linkUploadForm':linkUploadForm, 'fileUploadForm':fileUploadForm,
+              'error':error, 'uploadRequests':urs})
     return render_to_response('mediaUpload/upload.html', c)
 
 def handleUpload(request, category):
@@ -51,7 +56,7 @@ def handleUpload(request, category):
             itemClass = getItemClass(category)
             item = itemClass.handleForm(form)
             form, error = handleItemForm(request, form, item)
-        except Exception, e:
+        except Language.DoesNotExist:#Exception, e:
             error = 'Having an error: %s' % str(e)
     else:
         error = 'invalid UploadForm'
