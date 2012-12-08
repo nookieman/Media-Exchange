@@ -14,7 +14,7 @@ SET UP
 In order to get going you need the following:
 
 ```
-aptitude install python-django python-crypto simplejson
+aptitude install python-django python-crypto python-simplejson
 ```
 
 
