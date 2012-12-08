@@ -49,4 +49,26 @@
 {% endfor %}
 </ul>
 
+
+<h1>20 Newest Audios</h1>
+
+<ul>
+{% for audio in audios %}
+    <li>
+        <a href="/items/{{ audio.id }}/">
+            {{ audio.name|escape }}
+            {% if audio.artist %} by {{ audio.artist|escape }}{% endif %}
+            {% if audio.year %} ({{ audio.year|escape }}){% endif %}
+            {% if audio.source %} [{{ audio.source|escape }}]{% endif %}
+            {% if audio.language %} |{{ audio.language|escape }}|{% endif %}
+        </a>
+        {% for dur in doneUploadRequests %}
+            {% ifequal dur.item.id audio.id %}
+                (ready)
+            {% endifequal %}
+        {% endfor %}
+    </li>
+{% endfor %}
+</ul>
+
 {% endblock %}
