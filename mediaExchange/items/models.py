@@ -437,8 +437,8 @@ class Movie(Item):
             d.update({'subname' : self.subname})
         if self.year:
             d.update({'year' : self.year})
-        if self.genres:
-            genreList = [genre.name for genre in self.genres]
+        if self.genres and self.genres.all():
+            genreList = [genre.name for genre in self.genres.all()]
             d.update({'genres' : genreList})
         return d
 
@@ -517,8 +517,8 @@ class Season(Item):
             d['subname'] = self.subname
         if self.year:
             d['year'] = self.year
-        if self.genres:
-            genreList = [genre.name for genre in self.genres]
+        if self.genres and self.genres.all():
+            genreList = [genre.name for genre in self.genres.all()]
             d.update({'genres' : genreList})
         return d
 
@@ -555,8 +555,8 @@ class Audio(Item):
             d['artist'] = self.artist.name
         if self.year:
             d['year'] = self.year
-        if self.genres:
-            genreList = [genre.name for genre in self.genres]
+        if self.genres and self.genres.all():
+            genreList = [genre.name for genre in self.genres.all()]
             d.update({'genres' : genreList})
         return d
 
