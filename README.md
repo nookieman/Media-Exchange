@@ -75,7 +75,7 @@ The Big Bang Theory/Season 2 [DVDRip] |eng|
 
 
 
-The medaemon.py script should run at all times. It is responible to react on
+The medaemon.py script should run at all times. It is responsible to react on
 user's wishes. It packages and uploads requested media.
 
 See the /about page for help with decrypting files.
